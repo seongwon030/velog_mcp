@@ -7,7 +7,7 @@ Claude가 Velog에 직접 포스트를 작성하고 발행할 수 있는 MCP 서
 ## 설치
 
 ```bash
-npx velog-mcp-setup
+npx -p velog-mcp-claude velog-mcp-setup
 ```
 
 Velog에 로그인한 상태에서 브라우저 DevTools → Application → Cookies → `https://velog.io`에서 `access_token`과 `refresh_token` 값을 복사해 입력하세요.
@@ -19,7 +19,7 @@ Velog에 로그인한 상태에서 브라우저 DevTools → Application → Coo
 ### 프로젝트에 추가
 
 ```bash
-claude mcp add velog npx -y velog-mcp-claude
+claude mcp add velog -- npx -y velog-mcp-claude
 ```
 
 또는 프로젝트의 `.claude/settings.json`에 직접 추가:
@@ -38,7 +38,7 @@ claude mcp add velog npx -y velog-mcp-claude
 ### 전역(글로벌)으로 추가
 
 ```bash
-claude mcp add --scope global velog npx -y velog-mcp-claude
+claude mcp add --scope global velog -- npx -y velog-mcp-claude
 ```
 
 글로벌 설정은 모든 프로젝트에서 사용 가능합니다.
