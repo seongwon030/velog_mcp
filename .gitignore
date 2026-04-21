@@ -4,3 +4,4 @@ dist/
 .env
 ~/.velog-mcp.json
 .npmrc
+.omc/

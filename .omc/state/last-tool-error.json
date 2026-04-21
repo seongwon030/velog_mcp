@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"npm publish 2>&1\",\"description\":\"Publish to npm\"}",
-  "error": "Exit code 1\n\n> velog_mcp@0.1.0 prepublishOnly\n> npm run build\n\n\n> velog_mcp@0.1.0 build\n> tsc\n\nnpm warn publish npm auto-corrected some errors in your package.json when publishing.  Please run \"npm pkg fix\" to address these errors.\nnpm warn publish errors corrected:\nnpm warn publish \"repository.url\" was normalized to \"git+https://github.com/seongwon030/velog_mcp.git\"\nnpm notice\nnpm notice 📦  velog_mcp@0.1.0\nnpm notice Tarball Contents\nnpm notice 1.1kB LICENSE\nnpm notice 4.7kB README.md\nnpm noti...",
-  "timestamp": "2026-04-21T04:54:37.208Z",
-  "retry_count": 2
-}
