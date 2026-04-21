@@ -127,6 +127,15 @@ Claude: velog_publish_post(draft_id: "abc123", is_private: true)
 - 발행하지 않고 보존하려면 `velog_publish_post(is_private: true)`로 비공개 저장.
 - 이미지: 마크다운 외부 URL 참조 방식 (`![alt](url)`) 사용.
 
+## 면책 조항
+
+이 프로젝트는 Velog의 공식 지원을 받지 않으며, Velog와 무관한 독립 오픈소스입니다.
+
+- Velog의 공개 API가 없어 내부 GraphQL API를 리버스 엔지니어링하여 구현되었습니다.
+- Velog 이용약관(ToS) 변경 또는 API 구조 변경으로 인해 예고 없이 동작이 중단될 수 있습니다.
+- 이 도구 사용으로 발생하는 계정 제한, 정지 등의 불이익에 대해 개발자는 책임을 지지 않습니다.
+- 본인 계정의 토큰만 사용하고, 타인의 계정 정보를 입력하지 마세요.
+
 ## 라이선스
 
 MIT
