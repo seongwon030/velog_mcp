@@ -26,9 +26,14 @@ export async function uploadImage(params: {
   const mimeType = mimeTypes[ext] ?? "application/octet-stream";
 
   const formData = new FormData();
-  formData.append("image", new Blob([fileBuffer], { type: mimeType }), fileName);
+  formData.append(
+    "image",
+    new Blob([fileBuffer], { type: mimeType }),
+    fileName,
+  );
+  formData.append("type", "post");
 
-  const res = await fetch("https://v2.velog.io/api/files/v3/upload", {
+  const res = await fetch("https://v3.velog.io/api/files/v3/upload", {
     method: "POST",
     headers: {
       Cookie: `access_token=${cfg.access_token}; refresh_token=${cfg.refresh_token}`,
@@ -47,7 +52,7 @@ export async function uploadImage(params: {
     );
   }
 
-  const json = await res.json() as { path?: string; message?: string };
+  const json = (await res.json()) as { path?: string; message?: string };
 
   if (!json.path) {
     throw new Error(json.message ?? "이미지 업로드에 실패했습니다.");
