@@ -1,8 +1,15 @@
 {
-  "name": "velog-mcp-claude",
+  "name": "@seongwon030/velog-mcp-claude",
   "version": "0.1.0",
   "description": "MCP server for Velog - draft, publish, and manage posts via Claude",
-  "keywords": ["mcp", "model-context-protocol", "velog", "blog", "claude", "ai"],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "velog",
+    "blog",
+    "claude",
+    "ai"
+  ],
   "author": "",
   "license": "MIT",
   "type": "module",
@@ -32,6 +39,9 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "repository": {
     "type": "git",
