@@ -13,6 +13,7 @@ import { listPosts } from "./tools/list.js";
 import { getPost } from "./tools/get.js";
 import { updatePost } from "./tools/update.js";
 import { deletePost } from "./tools/delete.js";
+import { uploadImage } from "./tools/upload.js";
 
 const server = new Server(
   { name: "velog_mcp", version: "0.1.0" },
@@ -98,6 +99,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["post_id"],
       },
     },
+    {
+      name: "velog_upload_image",
+      description: "로컬 이미지 파일을 Velog에 업로드하고 URL을 반환합니다. 반환된 URL을 마크다운 본문에 사용하세요.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          file_path: { type: "string", description: "업로드할 이미지 파일의 절대 경로 또는 상대 경로 (.jpg, .jpeg, .png, .gif, .webp)" },
+        },
+        required: ["file_path"],
+      },
+    },
   ],
 }));
 
@@ -172,6 +184,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "velog_delete_post": {
         const params = z.object({ post_id: z.string() }).parse(args);
         const result = await deletePost(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_upload_image": {
+        const params = z.object({ file_path: z.string() }).parse(args);
+        const result = await uploadImage(params);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 

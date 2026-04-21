@@ -106,6 +106,7 @@ Claude: velog_publish_post(draft_id: "abc123", is_private: true)
 | `velog_get_post`     | 특정 포스트 전체 내용 조회          |
 | `velog_update_post`  | 기존 포스트 수정                    |
 | `velog_delete_post`  | 포스트 삭제                         |
+| `velog_upload_image` | 로컬 이미지 파일을 Velog에 업로드   |
 
 ## 인증
 
