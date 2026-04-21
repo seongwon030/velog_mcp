@@ -1,4 +1,5 @@
-import { graphql } from "../auth.js";
+import { loadConfig } from "../auth.js";
+import { getPost } from "./get.js";
 
 const EDIT_POST = `
   mutation EditPost(
@@ -31,8 +32,8 @@ const EDIT_POST = `
     ) {
       id
       url_slug
-      updated_at
       user {
+        id
         username
       }
     }
@@ -40,37 +41,56 @@ const EDIT_POST = `
 `;
 
 export async function updatePost(params: {
-  post_id: string;
+  url_slug: string;
   title?: string;
   body?: string;
   tags?: string[];
   is_private?: boolean;
   short_description?: string;
-}): Promise<{ post_id: string; url_slug: string; url: string; updated_at: string }> {
-  const { data } = await graphql<{
-    editPost: {
-      id: string;
-      url_slug: string;
-      updated_at: string;
-      user: { username: string };
-    };
-  }>(EDIT_POST, {
-    id: params.post_id,
-    title: params.title,
-    body: params.body,
-    tags: params.tags,
+}): Promise<{ post_id: string; url_slug: string; url: string }> {
+  const cfg = loadConfig();
+  const current = await getPost({ url_slug: params.url_slug });
+
+  const variables = {
+    id: current.post_id,
+    title: params.title ?? current.title,
+    body: params.body ?? current.body,
+    tags: params.tags ?? current.tags,
     is_markdown: true,
-    is_private: params.is_private,
-    meta: params.short_description
-      ? { short_description: params.short_description }
-      : undefined,
+    is_temp: false,
+    is_private: params.is_private ?? current.is_private,
+    url_slug: params.url_slug,
+    thumbnail: null,
+    meta: { short_description: params.short_description ?? "" },
+    series_id: null,
+    token: null,
+  };
+
+  const res = await fetch("https://v2.velog.io/graphql", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `access_token=${cfg.access_token}; refresh_token=${cfg.refresh_token}`,
+      Origin: "https://velog.io",
+      Referer: "https://velog.io/",
+    },
+    body: JSON.stringify({
+      operationName: "EditPost",
+      variables,
+      query: EDIT_POST,
+    }),
   });
 
-  const { id, url_slug, updated_at, user } = data.editPost;
+  const raw = await res.json() as { data?: { editPost: unknown } | null; errors?: { message: string }[] };
+
+  if (!raw.data?.editPost) {
+    throw new Error(`editPost 실패. status=${res.status}, raw=${JSON.stringify(raw)}`);
+  }
+
+  const post = raw.data.editPost as { id: string; url_slug: string; user: { username: string } };
   return {
-    post_id: id,
-    url_slug,
-    url: `https://velog.io/@${user.username}/${url_slug}`,
-    updated_at,
+    post_id: post.id,
+    url_slug: post.url_slug,
+    url: `https://velog.io/@${post.user.username}/${post.url_slug}`,
   };
 }

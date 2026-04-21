@@ -77,14 +77,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       inputSchema: {
         type: "object",
         properties: {
-          post_id: { type: "string", description: "수정할 포스트 ID" },
+          url_slug: { type: "string", description: "수정할 포스트의 URL slug (예: my-post-title)" },
           title: { type: "string", description: "새 제목" },
           body: { type: "string", description: "새 마크다운 본문" },
           tags: { type: "array", items: { type: "string" }, description: "새 태그 목록" },
           is_private: { type: "boolean", description: "비공개 여부" },
           short_description: { type: "string", description: "새 요약" },
         },
-        required: ["post_id"],
+        required: ["url_slug"],
       },
     },
     {
@@ -157,7 +157,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "velog_update_post": {
         const params = z
           .object({
-            post_id: z.string(),
+            url_slug: z.string(),
             title: z.string().optional(),
             body: z.string().optional(),
             tags: z.array(z.string()).optional(),

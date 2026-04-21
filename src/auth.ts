@@ -68,8 +68,10 @@ export async function graphql<T>(
     headers: {
       "Content-Type": "application/json",
       Cookie: `access_token=${cfg.access_token}; refresh_token=${cfg.refresh_token}`,
+      Origin: "https://velog.io",
+      Referer: "https://velog.io/",
     },
-    body: JSON.stringify({ query, variables }),
+    body: JSON.stringify({ operationName: query.match(/(?:mutation|query)\s+(\w+)/)?.[1] ?? null, query, variables }),
     signal: AbortSignal.timeout(5000),
   }).catch(() => {
     throw new Error(
