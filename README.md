@@ -7,7 +7,7 @@ Claude가 Velog에 직접 포스트를 작성하고 발행할 수 있는 MCP 서
 ## 설치
 
 ```bash
-npx velog_mcp_setup
+npx velog-mcp-setup
 ```
 
 Velog에 로그인한 상태에서 브라우저 DevTools → Application → Cookies → `https://velog.io`에서 `access_token`과 `refresh_token` 값을 복사해 입력하세요.
@@ -19,7 +19,7 @@ Velog에 로그인한 상태에서 브라우저 DevTools → Application → Coo
 ### 프로젝트에 추가
 
 ```bash
-claude mcp add velog npx -y velog_mcp
+claude mcp add velog npx -y velog-mcp-claude
 ```
 
 또는 프로젝트의 `.claude/settings.json`에 직접 추가:
@@ -29,7 +29,7 @@ claude mcp add velog npx -y velog_mcp
   "mcpServers": {
     "velog": {
       "command": "npx",
-      "args": ["-y", "velog_mcp"]
+      "args": ["-y", "velog-mcp-claude"]
     }
   }
 }
@@ -38,7 +38,7 @@ claude mcp add velog npx -y velog_mcp
 ### 전역(글로벌)으로 추가
 
 ```bash
-claude mcp add --scope global velog npx -y velog_mcp
+claude mcp add --scope global velog npx -y velog-mcp-claude
 ```
 
 글로벌 설정은 모든 프로젝트에서 사용 가능합니다.
@@ -65,7 +65,7 @@ Claude: (velog_draft_post 호출 → 검토 후 발행)
   "mcpServers": {
     "velog": {
       "command": "npx",
-      "args": ["-y", "velog_mcp"]
+      "args": ["-y", "velog-mcp-claude"]
     }
   }
 }
@@ -108,15 +108,15 @@ Claude: velog_publish_post(draft_id: "abc123", is_private: true)
 ## 인증
 
 - `access_token`: ~1-2시간 TTL. Velog 서버가 GraphQL 응답에 `Set-Cookie`로 자동 갱신.
-- `refresh_token`: ~30일 TTL. 만료 시 `npx velog_mcp_setup` 재실행 필요.
+- `refresh_token`: ~30일 TTL. 만료 시 `npx velog-mcp-setup` 재실행 필요.
 - 별도 refresh 엔드포인트 없음 — Velog 미들웨어가 자동 처리.
 
 ## 에러 처리
 
 | 상황            | 메시지                                                                          |
 | --------------- | ------------------------------------------------------------------------------- |
-| 토큰 만료 (401) | `"토큰이 만료됐거나 유효하지 않습니다. npx velog_mcp_setup을 다시 실행하세요."` |
-| 설정 파일 없음  | `"설정 파일이 없습니다. npx velog_mcp_setup을 실행하세요."`                     |
+| 토큰 만료 (401) | `"토큰이 만료됐거나 유효하지 않습니다. npx velog-mcp-setup을 다시 실행하세요."` |
+| 설정 파일 없음  | `"설정 파일이 없습니다. npx velog-mcp-setup을 실행하세요."`                     |
 | 네트워크 오류   | `"Velog API에 연결할 수 없습니다. 네트워크를 확인하세요."`                      |
 | 잘못된 draft_id | `"draft_id가 존재하지 않습니다. velog_draft_post를 먼저 호출하세요."`           |
 | GraphQL 오류    | Velog 서버 에러 메시지 그대로 반환                                              |

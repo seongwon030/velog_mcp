@@ -79,6 +79,19 @@
       ]
     }
   },
-  "hotPaths": [],
+  "hotPaths": [
+    {
+      "path": "README.md",
+      "accessCount": 6,
+      "lastAccessed": 1776747481645,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 5,
+      "lastAccessed": 1776747470758,
+      "type": "file"
+    }
+  ],
   "userDirectives": []
 }

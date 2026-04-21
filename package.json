@@ -1,5 +1,5 @@
 {
-  "name": "velog_mcp",
+  "name": "velog-mcp-claude",
   "version": "0.1.0",
   "description": "MCP server for Velog - draft, publish, and manage posts via Claude",
   "keywords": ["mcp", "model-context-protocol", "velog", "blog", "claude", "ai"],
@@ -8,8 +8,8 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "velog_mcp": "dist/index.js",
-    "velog_mcp_setup": "dist/setup.js"
+    "velog-mcp-claude": "dist/index.js",
+    "velog-mcp-setup": "dist/setup.js"
   },
   "scripts": {
     "build": "tsc",

@@ -1,7 +1,7 @@
 {
   "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"rtk ls /Users/seokyoung-won/Desktop/velog-mcp && rtk git -C /Users/seokyoung-won/Desktop/velog-mcp status 2>&1\",\"description\":\"Check project files and git status\"}",
-  "error": "Exit code 128\n.omc/\nsrc/\n.gitignore  52B\nLICENSE  1.0K\nREADME.md  3.4K\npackage-lock.json  41.1K\npackage.json  886B\ntsconfig.json  372B\n\n6 files, 2 dirs (3 .json, 1 no ext, 1 .gitignore, 1 .md)\nNot a git repository",
-  "timestamp": "2026-04-21T02:51:29.042Z",
-  "retry_count": 1
+  "tool_input_preview": "{\"command\":\"npm publish 2>&1\",\"description\":\"Publish to npm\"}",
+  "error": "Exit code 1\n\n> velog_mcp@0.1.0 prepublishOnly\n> npm run build\n\n\n> velog_mcp@0.1.0 build\n> tsc\n\nnpm warn publish npm auto-corrected some errors in your package.json when publishing.  Please run \"npm pkg fix\" to address these errors.\nnpm warn publish errors corrected:\nnpm warn publish \"repository.url\" was normalized to \"git+https://github.com/seongwon030/velog_mcp.git\"\nnpm notice\nnpm notice 📦  velog_mcp@0.1.0\nnpm notice Tarball Contents\nnpm notice 1.1kB LICENSE\nnpm notice 4.7kB README.md\nnpm noti...",
+  "timestamp": "2026-04-21T04:54:37.208Z",
+  "retry_count": 2
 }
