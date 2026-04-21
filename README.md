@@ -1,8 +1,10 @@
-# velog_mcp
+# velog-mcp-claude
 
 Claude가 Velog에 직접 포스트를 작성하고 발행할 수 있는 MCP 서버.
 
 공개 API가 없는 Velog를 GraphQL 리버스 엔지니어링으로 지원합니다. draft → 사용자 검토 → publish의 human-in-the-loop 플로우로 설계되어, 자동화이면서도 사용자가 완전한 통제권을 유지합니다.
+
+**npm**: [velog-mcp-claude](https://www.npmjs.com/package/velog-mcp-claude) | **요구사항**: Node.js 18+
 
 ## 설치
 
@@ -108,18 +110,18 @@ Claude: velog_publish_post(draft_id: "abc123", is_private: true)
 ## 인증
 
 - `access_token`: ~1-2시간 TTL. Velog 서버가 GraphQL 응답에 `Set-Cookie`로 자동 갱신.
-- `refresh_token`: ~30일 TTL. 만료 시 `npx velog-mcp-setup` 재실행 필요.
+- `refresh_token`: ~30일 TTL. 만료 시 `npx -p velog-mcp-claude velog-mcp-setup` 재실행 필요.
 - 별도 refresh 엔드포인트 없음 — Velog 미들웨어가 자동 처리.
 
 ## 에러 처리
 
-| 상황            | 메시지                                                                          |
-| --------------- | ------------------------------------------------------------------------------- |
-| 토큰 만료 (401) | `"토큰이 만료됐거나 유효하지 않습니다. npx velog-mcp-setup을 다시 실행하세요."` |
-| 설정 파일 없음  | `"설정 파일이 없습니다. npx velog-mcp-setup을 실행하세요."`                     |
-| 네트워크 오류   | `"Velog API에 연결할 수 없습니다. 네트워크를 확인하세요."`                      |
-| 잘못된 draft_id | `"draft_id가 존재하지 않습니다. velog_draft_post를 먼저 호출하세요."`           |
-| GraphQL 오류    | Velog 서버 에러 메시지 그대로 반환                                              |
+| 상황            | 메시지                                                                                             |
+| --------------- | -------------------------------------------------------------------------------------------------- |
+| 토큰 만료 (401) | `"토큰이 만료됐거나 유효하지 않습니다. npx -p velog-mcp-claude velog-mcp-setup을 다시 실행하세요."` |
+| 설정 파일 없음  | `"설정 파일이 없습니다. npx -p velog-mcp-claude velog-mcp-setup을 실행하세요."`                     |
+| 네트워크 오류   | `"Velog API에 연결할 수 없습니다. 네트워크를 확인하세요."`                                          |
+| 잘못된 draft_id | `"draft_id가 존재하지 않습니다. velog_draft_post를 먼저 호출하세요."`                               |
+| GraphQL 오류    | Velog 서버 에러 메시지 그대로 반환                                                                  |
 
 ## 주의사항
 
