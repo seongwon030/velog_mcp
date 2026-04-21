@@ -54,7 +54,11 @@ export async function publishPost(params: {
   const is_private = params.is_private ?? draft.is_private;
 
   const { data } = await graphql<{
-    writePost: { id: string; url_slug: string; user: { username: string } } | null;
+    writePost: {
+      id: string;
+      url_slug: string;
+      user: { username: string };
+    } | null;
   }>(WRITE_POST, {
     title: draft.title,
     body: draft.body,
@@ -63,14 +67,16 @@ export async function publishPost(params: {
     is_temp: false,
     is_private,
     url_slug: titleToSlug(draft.title),
-    thumbnail: null,
+    thumbnail: draft.thumbnail ?? null,
     meta: { short_description: draft.short_description ?? "" },
     series_id: null,
     token: null,
   });
 
   if (!data.writePost) {
-    throw new Error("포스트 발행에 실패했습니다. 토큰이 만료됐을 수 있습니다. npx velog-mcp-setup을 다시 실행하세요.");
+    throw new Error(
+      "포스트 발행에 실패했습니다. 토큰이 만료됐을 수 있습니다. npx velog-mcp-setup을 다시 실행하세요.",
+    );
   }
 
   deleteDraft(params.draft_id);

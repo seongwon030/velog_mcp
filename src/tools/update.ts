@@ -47,6 +47,7 @@ export async function updatePost(params: {
   tags?: string[];
   is_private?: boolean;
   short_description?: string;
+  thumbnail?: string | null;
 }): Promise<{ post_id: string; url_slug: string; url: string }> {
   const cfg = loadConfig();
   const current = await getPost({ url_slug: params.url_slug });
@@ -60,7 +61,7 @@ export async function updatePost(params: {
     is_temp: false,
     is_private: params.is_private ?? current.is_private,
     url_slug: params.url_slug,
-    thumbnail: null,
+    thumbnail: params.thumbnail !== undefined ? params.thumbnail : (current.thumbnail ?? null),
     meta: { short_description: params.short_description ?? "" },
     series_id: null,
     token: null,

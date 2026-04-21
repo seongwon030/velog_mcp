@@ -10,6 +10,7 @@ const READ_POST = `
       is_private
       is_temp
       url_slug
+      thumbnail
       released_at
     }
   }
@@ -31,6 +32,7 @@ export async function getPost(params: { url_slug: string }): Promise<{
   is_private: boolean;
   is_temp: boolean;
   url_slug: string;
+  thumbnail: string | null;
   released_at: string;
 }> {
   const { data: userData } = await graphql<{
@@ -52,6 +54,7 @@ export async function getPost(params: { url_slug: string }): Promise<{
       is_private: boolean;
       is_temp: boolean;
       url_slug: string;
+      thumbnail: string | null;
       released_at: string;
     } | null;
   }>(READ_POST, {
@@ -71,6 +74,7 @@ export async function getPost(params: { url_slug: string }): Promise<{
     is_private: data.post.is_private,
     is_temp: data.post.is_temp,
     url_slug: data.post.url_slug,
+    thumbnail: data.post.thumbnail,
     released_at: data.post.released_at,
   };
 }

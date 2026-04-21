@@ -7,6 +7,7 @@ export interface Draft {
   tags: string[];
   is_private: boolean;
   short_description?: string;
+  thumbnail?: string;
 }
 
 const drafts = new Map<string, Draft>();
@@ -17,6 +18,7 @@ export function createDraft(params: {
   tags?: string[];
   is_private?: boolean;
   short_description?: string;
+  thumbnail?: string;
 }): Draft {
   const draft_id = nanoid(8);
   const draft: Draft = {
@@ -26,6 +28,7 @@ export function createDraft(params: {
     tags: params.tags ?? [],
     is_private: params.is_private ?? false,
     short_description: params.short_description,
+    thumbnail: params.thumbnail,
   };
   drafts.set(draft_id, draft);
   return draft;

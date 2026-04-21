@@ -34,6 +34,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           tags: { type: "array", items: { type: "string" }, description: "태그 목록" },
           is_private: { type: "boolean", description: "비공개 여부 (기본값: false)" },
           short_description: { type: "string", description: "포스트 요약" },
+          thumbnail: { type: "string", description: "썸네일 이미지 URL (velog_upload_image로 업로드한 URL 또는 외부 URL)" },
         },
         required: ["title", "body"],
       },
@@ -84,6 +85,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           tags: { type: "array", items: { type: "string" }, description: "새 태그 목록" },
           is_private: { type: "boolean", description: "비공개 여부" },
           short_description: { type: "string", description: "새 요약" },
+          thumbnail: { type: "string", description: "새 썸네일 URL. null을 넘기면 썸네일 제거" },
         },
         required: ["url_slug"],
       },
@@ -126,6 +128,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             tags: z.array(z.string()).optional(),
             is_private: z.boolean().optional(),
             short_description: z.string().optional(),
+            thumbnail: z.string().optional(),
           })
           .parse(args);
         const draft = createDraft(params);
@@ -175,6 +178,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             tags: z.array(z.string()).optional(),
             is_private: z.boolean().optional(),
             short_description: z.string().optional(),
+            thumbnail: z.string().nullable().optional(),
           })
           .parse(args);
         const result = await updatePost(params);
