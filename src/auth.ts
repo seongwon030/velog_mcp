@@ -211,7 +211,7 @@ async function injectClaudeDesktopConfig(): Promise<void> {
   const mcpServers = (existing.mcpServers ?? {}) as Record<string, unknown>;
   mcpServers["velog"] = {
     command: "npx",
-    args: ["-y", "velog_mcp"],
+    args: ["-y", "velog-mcp-claude"],
   };
   existing.mcpServers = mcpServers;
 
