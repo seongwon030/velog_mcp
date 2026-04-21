@@ -14,7 +14,7 @@ export interface VelogConfig {
 export function loadConfig(): VelogConfig {
   if (!fs.existsSync(CONFIG_PATH)) {
     throw new Error(
-      "설정 파일이 없습니다. `npx velog_mcp setup`을 실행하세요."
+      "설정 파일이 없습니다. `npx velog_mcp setup`을 실행하세요.",
     );
   }
   return JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8")) as VelogConfig;
@@ -28,7 +28,7 @@ function saveConfig(config: VelogConfig): void {
 
 export function updateTokensFromSetCookie(
   setCookieHeader: string | null,
-  config: VelogConfig
+  config: VelogConfig,
 ): VelogConfig {
   if (!setCookieHeader) return config;
 
@@ -59,7 +59,7 @@ export function updateTokensFromSetCookie(
 export async function graphql<T>(
   query: string,
   variables: Record<string, unknown> = {},
-  config?: VelogConfig
+  config?: VelogConfig,
 ): Promise<{ data: T; newConfig: VelogConfig }> {
   const cfg = config ?? loadConfig();
 
@@ -68,27 +68,30 @@ export async function graphql<T>(
     headers: {
       "Content-Type": "application/json",
       Cookie: `access_token=${cfg.access_token}; refresh_token=${cfg.refresh_token}`,
-      Origin: "https://velog.io",
-      Referer: "https://velog.io/",
     },
-    body: JSON.stringify({ operationName: query.match(/(?:mutation|query)\s+(\w+)/)?.[1] ?? null, query, variables }),
+    body: JSON.stringify({
+      operationName: query.match(/(?:mutation|query)\s+(\w+)/)?.[1] ?? null,
+      query,
+      variables,
+    }),
     signal: AbortSignal.timeout(5000),
   }).catch(() => {
-    throw new Error(
-      "Velog API에 연결할 수 없습니다. 네트워크를 확인하세요."
-    );
+    throw new Error("Velog API에 연결할 수 없습니다. 네트워크를 확인하세요.");
   });
 
   if (res.status === 401) {
     throw new Error(
-      "토큰이 만료됐거나 유효하지 않습니다. `npx velog_mcp setup`을 다시 실행하세요."
+      "토큰이 만료됐거나 유효하지 않습니다. `npx velog_mcp setup`을 다시 실행하세요.",
     );
   }
 
   const setCookie = res.headers.get("set-cookie");
   const newConfig = updateTokensFromSetCookie(setCookie, cfg);
 
-  const json = (await res.json()) as { data?: T; errors?: { message: string }[] };
+  const json = (await res.json()) as {
+    data?: T;
+    errors?: { message: string }[];
+  };
 
   if (json.errors?.length) {
     throw new Error(json.errors[0].message);
@@ -114,7 +117,7 @@ async function prompt(question: string): Promise<string> {
 export async function runSetup(): Promise<void> {
   console.log("=== velog_mcp 설정 ===\n");
   console.log(
-    "Velog에 로그인한 후 브라우저 DevTools → Application → Cookies에서"
+    "Velog에 로그인한 후 브라우저 DevTools → Application → Cookies에서",
   );
   console.log("access_token과 refresh_token 값을 복사하세요.\n");
 
@@ -130,13 +133,21 @@ export async function runSetup(): Promise<void> {
 
   try {
     const { data } = await graphql<{ auth: { username: string } | null }>(
-      `query { auth { username } }`,
+      `
+        query {
+          auth {
+            username
+          }
+        }
+      `,
       {},
-      { access_token, refresh_token }
+      { access_token, refresh_token },
     );
 
     if (!data.auth) {
-      console.error("유효하지 않은 토큰입니다. Velog에 로그인 상태를 확인하세요.");
+      console.error(
+        "유효하지 않은 토큰입니다. Velog에 로그인 상태를 확인하세요.",
+      );
       process.exit(1);
     }
 
@@ -156,13 +167,13 @@ function getClaudeDesktopConfigPath(): string | null {
   if (platform === "darwin") {
     return path.join(
       os.homedir(),
-      "Library/Application Support/Claude/claude_desktop_config.json"
+      "Library/Application Support/Claude/claude_desktop_config.json",
     );
   }
   if (platform === "win32") {
     return path.join(
       process.env.APPDATA ?? os.homedir(),
-      "Claude/claude_desktop_config.json"
+      "Claude/claude_desktop_config.json",
     );
   }
   if (platform === "linux") {
@@ -174,19 +185,24 @@ function getClaudeDesktopConfigPath(): string | null {
 async function injectClaudeDesktopConfig(): Promise<void> {
   const configPath = getClaudeDesktopConfigPath();
   if (!configPath) {
-    console.log("\nClaude Desktop config 경로를 감지할 수 없습니다. 수동으로 추가하세요.");
+    console.log(
+      "\nClaude Desktop config 경로를 감지할 수 없습니다. 수동으로 추가하세요.",
+    );
     return;
   }
 
   const answer = await prompt(
-    "\nClaude Desktop config에 자동으로 추가할까요? (y/n): "
+    "\nClaude Desktop config에 자동으로 추가할까요? (y/n): ",
   );
   if (answer.toLowerCase() !== "y") return;
 
   let existing: Record<string, unknown> = {};
   if (fs.existsSync(configPath)) {
     try {
-      existing = JSON.parse(fs.readFileSync(configPath, "utf-8")) as Record<string, unknown>;
+      existing = JSON.parse(fs.readFileSync(configPath, "utf-8")) as Record<
+        string,
+        unknown
+      >;
     } catch {
       // 파싱 실패 시 빈 객체로 시작
     }
