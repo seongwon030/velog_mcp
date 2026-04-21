@@ -14,6 +14,48 @@ Velog에 로그인한 상태에서 브라우저 DevTools → Application → Coo
 
 토큰은 `~/.velog-mcp.json`에 `0600` 권한으로 저장됩니다. `.gitignore`에 추가하세요.
 
+## Claude CLI (Claude Code) 설정
+
+### 프로젝트에 추가
+
+```bash
+claude mcp add velog npx -y velog_mcp
+```
+
+또는 프로젝트의 `.claude/settings.json`에 직접 추가:
+
+```json
+{
+  "mcpServers": {
+    "velog": {
+      "command": "npx",
+      "args": ["-y", "velog_mcp"]
+    }
+  }
+}
+```
+
+### 전역(글로벌)으로 추가
+
+```bash
+claude mcp add --scope global velog npx -y velog_mcp
+```
+
+글로벌 설정은 모든 프로젝트에서 사용 가능합니다.
+
+### 확인
+
+```bash
+claude mcp list
+```
+
+`velog` 서버가 목록에 표시되면 준비 완료. 이후 Claude Code 대화에서 바로 사용할 수 있습니다.
+
+```
+나: "React 훅에 대한 글 써줘"
+Claude: (velog_draft_post 호출 → 검토 후 발행)
+```
+
 ## Claude Desktop 설정
 
 `~/Library/Application Support/Claude/claude_desktop_config.json`에 추가:
