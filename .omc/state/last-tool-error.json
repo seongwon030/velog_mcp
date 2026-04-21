@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"rtk ls /Users/seokyoung-won/Desktop/velog-mcp && rtk git -C /Users/seokyoung-won/Desktop/velog-mcp status 2>&1\",\"description\":\"Check project files and git status\"}",
+  "error": "Exit code 128\n.omc/\nsrc/\n.gitignore  52B\nLICENSE  1.0K\nREADME.md  3.4K\npackage-lock.json  41.1K\npackage.json  886B\ntsconfig.json  372B\n\n6 files, 2 dirs (3 .json, 1 no ext, 1 .gitignore, 1 .md)\nNot a git repository",
+  "timestamp": "2026-04-21T02:51:29.042Z",
+  "retry_count": 1
+}

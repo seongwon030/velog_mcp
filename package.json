@@ -1,0 +1,40 @@
+{
+  "name": "velog_mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Velog - draft, publish, and manage posts via Claude",
+  "keywords": ["mcp", "model-context-protocol", "velog", "blog", "claude", "ai"],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "velog_mcp": "dist/index.js",
+    "velog_mcp_setup": "dist/setup.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "setup": "node dist/setup.js",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "nanoid": "^5.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  }
+}
