@@ -1,6 +1,6 @@
 {
   "name": "@seongwon030/velog-mcp-claude",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "MCP server for Velog - draft, publish, and manage posts via Claude",
   "keywords": [
     "mcp",

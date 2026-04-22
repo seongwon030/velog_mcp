@@ -17,6 +17,7 @@ import { uploadImage } from "./tools/upload.js";
 import { writeComment, deleteComment, getComments } from "./tools/comment.js";
 import { likePost, unlikePost } from "./tools/like.js";
 import { searchPosts } from "./tools/search.js";
+import { getTrending } from "./tools/trending.js";
 
 const server = new Server(
   { name: "velog_mcp", version: "0.1.0" },
@@ -220,14 +221,35 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_search_posts",
-      description: "Velog 포스트를 키워드로 검색합니다. username을 지정하면 특정 유저의 포스트만 검색합니다.",
+      description:
+        "Velog 포스트를 키워드로 검색합니다. username을 지정하면 특정 유저의 포스트만 검색합니다.",
       inputSchema: {
         type: "object",
         properties: {
           keyword: { type: "string", description: "검색 키워드" },
-          username: { type: "string", description: "검색할 유저 이름 (생략 시 전체 검색)" },
+          username: {
+            type: "string",
+            description: "검색할 유저 이름 (생략 시 전체 검색)",
+          },
         },
         required: ["keyword"],
+      },
+    },
+    {
+      name: "velog_get_trending",
+      description:
+        "Velog 트렌딩 포스트 목록을 가져옵니다. timeframe으로 기간을 지정할 수 있습니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          timeframe: {
+            type: "string",
+            enum: ["day", "week", "month", "year"],
+            description: "기간 (기본값: week)",
+          },
+          limit: { type: "number", description: "가져올 수 (기본값: 20)" },
+          offset: { type: "number", description: "오프셋 (기본값: 0)" },
+        },
       },
     },
   ],
@@ -359,6 +381,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           .object({ keyword: z.string(), username: z.string().optional() })
           .parse(args);
         const result = await searchPosts(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_get_trending": {
+        const params = z
+          .object({
+            timeframe: z.enum(["day", "week", "month", "year"]).optional(),
+            limit: z.number().optional(),
+            offset: z.number().optional(),
+          })
+          .parse(args ?? {});
+        const result = await getTrending(params);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 
