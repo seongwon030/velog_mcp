@@ -47,7 +47,7 @@ async function gql(cfgRef, operationName, query, variables = {}) {
       Referer: "https://velog.io/",
     },
     body: JSON.stringify({ operationName, query, variables }),
-    signal: AbortSignal.timeout(10000),
+    signal: AbortSignal.timeout(30000),
   });
 
   const refreshed = applySetCookie(res.headers.get("set-cookie"), cfgRef.value);
@@ -91,7 +91,7 @@ async function checkRead(cfgRef) {
 async function checkTrending() {
   const res = await fetch(TRENDING, {
     headers: { Referer: "https://velog.io/" },
-    signal: AbortSignal.timeout(10000),
+    signal: AbortSignal.timeout(30000),
   });
   if (!res.ok) throw new Error(`status ${res.status}`);
   const json = await res.json();
