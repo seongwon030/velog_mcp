@@ -14,6 +14,7 @@ import { getPost } from "./tools/get.js";
 import { updatePost } from "./tools/update.js";
 import { deletePost } from "./tools/delete.js";
 import { uploadImage } from "./tools/upload.js";
+import { writeComment } from "./tools/comment.js";
 
 const server = new Server(
   { name: "velog_mcp", version: "0.1.0" },
@@ -112,6 +113,19 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["file_path"],
       },
     },
+    {
+      name: "velog_write_comment",
+      description: "Velog 포스트에 댓글을 작성합니다. comment_id를 지정하면 대댓글로 작성됩니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          url_slug: { type: "string", description: "댓글을 달 포스트의 URL slug" },
+          text: { type: "string", description: "댓글 내용" },
+          comment_id: { type: "string", description: "대댓글 작성 시 부모 댓글 ID" },
+        },
+        required: ["url_slug", "text"],
+      },
+    },
   ],
 }));
 
@@ -194,6 +208,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "velog_upload_image": {
         const params = z.object({ file_path: z.string() }).parse(args);
         const result = await uploadImage(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_write_comment": {
+        const params = z
+          .object({
+            url_slug: z.string(),
+            text: z.string(),
+            comment_id: z.string().optional(),
+          })
+          .parse(args);
+        const result = await writeComment(params);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 
