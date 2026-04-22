@@ -159,7 +159,6 @@ Claude: velog_publish_post(draft_id: "abc123", is_private: true)
 이 프로젝트는 Velog 개발자([@velopert](https://github.com/velopert))로부터 운영을 허용한다는 답변을 받은 독립 오픈소스입니다.
 
 - Velog의 공개 API가 없어 내부 GraphQL API를 리버스 엔지니어링하여 구현되었습니다.
-- 현재 봇 차단 위젯이 임시 비활성화 상태입니다. 추후 재활성화 시 일부 기능이 중단될 수 있습니다.
 - 추후 공식 API 지원이 제공될 경우 해당 방식으로 전환할 예정입니다.
 - API 구조 변경으로 인해 예고 없이 동작이 중단될 수 있습니다.
 - 본인 계정의 토큰만 사용하고, 타인의 계정 정보를 입력하지 마세요.
