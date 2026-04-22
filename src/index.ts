@@ -15,6 +15,7 @@ import { updatePost } from "./tools/update.js";
 import { deletePost } from "./tools/delete.js";
 import { uploadImage } from "./tools/upload.js";
 import { writeComment, deleteComment, getComments } from "./tools/comment.js";
+import { likePost, unlikePost } from "./tools/like.js";
 
 const server = new Server(
   { name: "velog_mcp", version: "0.1.0" },
@@ -194,6 +195,28 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["url_slug"],
       },
     },
+    {
+      name: "velog_like_post",
+      description: "Velog 포스트에 좋아요를 누릅니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          post_id: { type: "string", description: "좋아요할 포스트 ID" },
+        },
+        required: ["post_id"],
+      },
+    },
+    {
+      name: "velog_unlike_post",
+      description: "Velog 포스트 좋아요를 취소합니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          post_id: { type: "string", description: "좋아요 취소할 포스트 ID" },
+        },
+        required: ["post_id"],
+      },
+    },
   ],
 }));
 
@@ -303,6 +326,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "velog_get_comments": {
         const params = z.object({ url_slug: z.string() }).parse(args);
         const result = await getComments(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_like_post": {
+        const params = z.object({ post_id: z.string() }).parse(args);
+        const result = await likePost(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_unlike_post": {
+        const params = z.object({ post_id: z.string() }).parse(args);
+        const result = await unlikePost(params);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 
