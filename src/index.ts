@@ -16,6 +16,7 @@ import { deletePost } from "./tools/delete.js";
 import { uploadImage } from "./tools/upload.js";
 import { writeComment, deleteComment, getComments } from "./tools/comment.js";
 import { likePost, unlikePost } from "./tools/like.js";
+import { searchPosts } from "./tools/search.js";
 
 const server = new Server(
   { name: "velog_mcp", version: "0.1.0" },
@@ -217,6 +218,18 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["post_id"],
       },
     },
+    {
+      name: "velog_search_posts",
+      description: "Velog 포스트를 키워드로 검색합니다. username을 지정하면 특정 유저의 포스트만 검색합니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          keyword: { type: "string", description: "검색 키워드" },
+          username: { type: "string", description: "검색할 유저 이름 (생략 시 전체 검색)" },
+        },
+        required: ["keyword"],
+      },
+    },
   ],
 }));
 
@@ -338,6 +351,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "velog_unlike_post": {
         const params = z.object({ post_id: z.string() }).parse(args);
         const result = await unlikePost(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_search_posts": {
+        const params = z
+          .object({ keyword: z.string(), username: z.string().optional() })
+          .parse(args);
+        const result = await searchPosts(params);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 
