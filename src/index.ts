@@ -14,11 +14,11 @@ import { getPost } from "./tools/get.js";
 import { updatePost } from "./tools/update.js";
 import { deletePost } from "./tools/delete.js";
 import { uploadImage } from "./tools/upload.js";
-import { writeComment } from "./tools/comment.js";
+import { writeComment, deleteComment, getComments } from "./tools/comment.js";
 
 const server = new Server(
   { name: "velog_mcp", version: "0.1.0" },
-  { capabilities: { tools: {} } }
+  { capabilities: { tools: {} } },
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
@@ -32,10 +32,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         properties: {
           title: { type: "string", description: "포스트 제목" },
           body: { type: "string", description: "마크다운 본문" },
-          tags: { type: "array", items: { type: "string" }, description: "태그 목록" },
-          is_private: { type: "boolean", description: "비공개 여부 (기본값: false)" },
+          tags: {
+            type: "array",
+            items: { type: "string" },
+            description: "태그 목록",
+          },
+          is_private: {
+            type: "boolean",
+            description: "비공개 여부 (기본값: false)",
+          },
           short_description: { type: "string", description: "포스트 요약" },
-          thumbnail: { type: "string", description: "썸네일 이미지 URL (velog_upload_image로 업로드한 URL 또는 외부 URL)" },
+          thumbnail: {
+            type: "string",
+            description:
+              "썸네일 이미지 URL (velog_upload_image로 업로드한 URL 또는 외부 URL)",
+          },
         },
         required: ["title", "body"],
       },
@@ -47,8 +58,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       inputSchema: {
         type: "object",
         properties: {
-          draft_id: { type: "string", description: "velog_draft_post에서 반환된 draft_id" },
-          is_private: { type: "boolean", description: "비공개 발행 여부 (초안 설정 덮어씀)" },
+          draft_id: {
+            type: "string",
+            description: "velog_draft_post에서 반환된 draft_id",
+          },
+          is_private: {
+            type: "boolean",
+            description: "비공개 발행 여부 (초안 설정 덮어씀)",
+          },
         },
         required: ["draft_id"],
       },
@@ -59,7 +76,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       inputSchema: {
         type: "object",
         properties: {
-          limit: { type: "number", description: "가져올 포스트 수 (기본값: 20)" },
+          limit: {
+            type: "number",
+            description: "가져올 포스트 수 (기본값: 20)",
+          },
         },
       },
     },
@@ -80,13 +100,23 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       inputSchema: {
         type: "object",
         properties: {
-          url_slug: { type: "string", description: "수정할 포스트의 URL slug (예: my-post-title)" },
+          url_slug: {
+            type: "string",
+            description: "수정할 포스트의 URL slug (예: my-post-title)",
+          },
           title: { type: "string", description: "새 제목" },
           body: { type: "string", description: "새 마크다운 본문" },
-          tags: { type: "array", items: { type: "string" }, description: "새 태그 목록" },
+          tags: {
+            type: "array",
+            items: { type: "string" },
+            description: "새 태그 목록",
+          },
           is_private: { type: "boolean", description: "비공개 여부" },
           short_description: { type: "string", description: "새 요약" },
-          thumbnail: { type: "string", description: "새 썸네일 URL. null을 넘기면 썸네일 제거" },
+          thumbnail: {
+            type: "string",
+            description: "새 썸네일 URL. null을 넘기면 썸네일 제거",
+          },
         },
         required: ["url_slug"],
       },
@@ -104,26 +134,64 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_upload_image",
-      description: "로컬 이미지 파일을 Velog에 업로드하고 URL을 반환합니다. 반환된 URL을 마크다운 본문에 사용하세요.",
+      description:
+        "로컬 이미지 파일을 Velog에 업로드하고 URL을 반환합니다. 반환된 URL을 마크다운 본문에 사용하세요.",
       inputSchema: {
         type: "object",
         properties: {
-          file_path: { type: "string", description: "업로드할 이미지 파일의 절대 경로 또는 상대 경로 (.jpg, .jpeg, .png, .gif, .webp)" },
+          file_path: {
+            type: "string",
+            description:
+              "업로드할 이미지 파일의 절대 경로 또는 상대 경로 (.jpg, .jpeg, .png, .gif, .webp)",
+          },
         },
         required: ["file_path"],
       },
     },
     {
       name: "velog_write_comment",
-      description: "Velog 포스트에 댓글을 작성합니다. comment_id를 지정하면 대댓글로 작성됩니다.",
+      description:
+        "Velog 포스트에 댓글을 작성합니다. comment_id를 지정하면 대댓글로 작성됩니다.",
       inputSchema: {
         type: "object",
         properties: {
-          url_slug: { type: "string", description: "댓글을 달 포스트의 URL slug" },
+          url_slug: {
+            type: "string",
+            description: "댓글을 달 포스트의 URL slug",
+          },
           text: { type: "string", description: "댓글 내용" },
-          comment_id: { type: "string", description: "대댓글 작성 시 부모 댓글 ID" },
+          comment_id: {
+            type: "string",
+            description: "대댓글 작성 시 부모 댓글 ID",
+          },
         },
         required: ["url_slug", "text"],
+      },
+    },
+    {
+      name: "velog_delete_comment",
+      description: "Velog 댓글을 삭제합니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          comment_id: { type: "string", description: "삭제할 댓글 ID" },
+        },
+        required: ["comment_id"],
+      },
+    },
+    {
+      name: "velog_get_comments",
+      description:
+        "특정 Velog 포스트의 댓글 목록을 가져옵니다. 댓글 ID를 확인하여 삭제에 활용할 수 있습니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          url_slug: {
+            type: "string",
+            description: "댓글을 조회할 포스트의 URL slug",
+          },
+        },
+        required: ["url_slug"],
       },
     },
   ],
@@ -146,7 +214,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           })
           .parse(args);
         const draft = createDraft(params);
-        const preview = draft.body.slice(0, 300) + (draft.body.length > 300 ? "..." : "");
+        const preview =
+          draft.body.slice(0, 300) + (draft.body.length > 300 ? "..." : "");
         return {
           content: [
             {
@@ -172,7 +241,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "velog_list_posts": {
-        const params = z.object({ limit: z.number().optional() }).parse(args ?? {});
+        const params = z
+          .object({ limit: z.number().optional() })
+          .parse(args ?? {});
         const posts = await listPosts(params);
         return { content: [{ type: "text", text: JSON.stringify(posts) }] };
       }
@@ -220,6 +291,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           })
           .parse(args);
         const result = await writeComment(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_delete_comment": {
+        const params = z.object({ comment_id: z.string() }).parse(args);
+        const result = await deleteComment(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_get_comments": {
+        const params = z.object({ url_slug: z.string() }).parse(args);
+        const result = await getComments(params);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 
