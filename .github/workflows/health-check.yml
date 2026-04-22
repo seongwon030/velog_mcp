@@ -1,0 +1,30 @@
+name: Velog API Health Check
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # 매일 UTC 00:00 (한국시간 09:00)
+  workflow_dispatch: # 수동 실행 가능
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Write token config
+        env:
+          VELOG_ACCESS_TOKEN: ${{ secrets.VELOG_ACCESS_TOKEN }}
+          VELOG_REFRESH_TOKEN: ${{ secrets.VELOG_REFRESH_TOKEN }}
+        run: |
+          echo "{\"access_token\":\"$VELOG_ACCESS_TOKEN\",\"refresh_token\":\"$VELOG_REFRESH_TOKEN\"}" > ~/.velog-mcp.json
+          chmod 600 ~/.velog-mcp.json
+
+      - name: Run health check
+        run: node scripts/health-check.mjs

@@ -23,6 +23,7 @@
     "dev": "tsc --watch",
     "start": "node dist/index.js",
     "setup": "node dist/setup.js",
+    "health": "node scripts/health-check.mjs",
     "prepublishOnly": "npm run build"
   },
   "files": [
