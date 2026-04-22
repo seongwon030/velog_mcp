@@ -18,6 +18,7 @@ import { writeComment, deleteComment, getComments } from "./tools/comment.js";
 import { likePost, unlikePost } from "./tools/like.js";
 import { searchPosts } from "./tools/search.js";
 import { getTrending } from "./tools/trending.js";
+import { getTrendReport } from "./tools/trend-report.js";
 
 const server = new Server(
   { name: "velog_mcp", version: "0.1.0" },
@@ -252,6 +253,25 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
       },
     },
+    {
+      name: "velog_trend_report",
+      description:
+        "Velog 트렌딩 포스트를 분석하여 최근 개발 동향 리포트 데이터를 반환합니다. 각 포스트의 태그, 요약, 좋아요/댓글 수를 포함하며 Claude가 이를 분석해 트렌드 문서를 작성합니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          timeframe: {
+            type: "string",
+            enum: ["day", "week", "month", "year"],
+            description: "분석 기간 (기본값: week)",
+          },
+          limit: {
+            type: "number",
+            description: "분석할 포스트 수 (기본값: 20, 최대: 40)",
+          },
+        },
+      },
+    },
   ],
 }));
 
@@ -393,6 +413,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           })
           .parse(args ?? {});
         const result = await getTrending(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_trend_report": {
+        const params = z
+          .object({
+            timeframe: z.enum(["day", "week", "month", "year"]).optional(),
+            limit: z.number().optional(),
+          })
+          .parse(args ?? {});
+        const result = await getTrendReport(params);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 
