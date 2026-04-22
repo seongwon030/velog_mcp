@@ -1,5 +1,7 @@
 # velog-mcp-claude
 
+> Velog 개발자([@velopert](https://github.com/velopert))로부터 운영을 허용한다는 답변을 받은 독립 오픈소스입니다.
+
 Claude가 Velog에 직접 포스트를 작성·발행·수정·삭제하고, 댓글·좋아요·검색·트렌딩까지 다룰 수 있는 MCP 서버.
 
 공개 API가 없는 Velog를 GraphQL 리버스 엔지니어링으로 지원합니다. draft → 사용자 검토 → publish의 human-in-the-loop 플로우로 설계되어, 자동화이면서도 사용자가 완전한 통제권을 유지합니다.
