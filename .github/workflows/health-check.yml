@@ -3,7 +3,7 @@ name: Velog API Health Check
 on:
   schedule:
     - cron: "0 0 * * *" # 매일 UTC 00:00 (한국시간 09:00)
-  workflow_dispatch: # 수동 실행 가능
+  workflow_dispatch:
 
 jobs:
   health-check:
@@ -27,4 +27,13 @@ jobs:
           chmod 600 ~/.velog-mcp.json
 
       - name: Run health check
+        id: health
         run: node scripts/health-check.mjs
+
+      - name: Update GitHub Secrets with refreshed tokens
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          gh secret set VELOG_ACCESS_TOKEN --body "${{ steps.health.outputs.access_token }}"
+          gh secret set VELOG_REFRESH_TOKEN --body "${{ steps.health.outputs.refresh_token }}"
