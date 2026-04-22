@@ -129,11 +129,11 @@ Claude: velog_publish_post(draft_id: "abc123", is_private: true)
 
 ### 탐색
 
-| 툴                    | 설명                                              |
-| --------------------- | ------------------------------------------------- |
-| `velog_search_posts`  | 키워드로 포스트 검색 (username 필터 지원)         |
-| `velog_get_trending`  | 트렌딩 포스트 조회 (day / week / month / year)    |
-| `velog_trend_report`  | 트렌딩 포스트 분석 → 개발 동향 리포트 데이터 반환 |
+| 툴                   | 설명                                              |
+| -------------------- | ------------------------------------------------- |
+| `velog_search_posts` | 키워드로 포스트 검색 (username 필터 지원)         |
+| `velog_get_trending` | 트렌딩 포스트 조회 (day / week / month / year)    |
+| `velog_trend_report` | 트렌딩 포스트 분석 → 개발 동향 리포트 데이터 반환 |
 
 ## 인증
 
@@ -158,8 +158,6 @@ Claude: velog_publish_post(draft_id: "abc123", is_private: true)
 - 이미지: 마크다운 외부 URL 참조 방식 (`![alt](url)`) 사용.
 
 ## 면책 조항
-
-이 프로젝트는 Velog 개발자([@velopert](https://github.com/velopert))로부터 운영을 허용한다는 답변을 받은 독립 오픈소스입니다.
 
 - Velog의 공개 API가 없어 내부 GraphQL API를 리버스 엔지니어링하여 구현되었습니다.
 - 추후 공식 API 지원이 제공될 경우 해당 방식으로 전환할 예정입니다.
