@@ -127,10 +127,11 @@ Claude: velog_publish_post(draft_id: "abc123", is_private: true)
 
 ### 탐색
 
-| 툴                   | 설명                                           |
-| -------------------- | ---------------------------------------------- |
-| `velog_search_posts` | 키워드로 포스트 검색 (username 필터 지원)      |
-| `velog_get_trending` | 트렌딩 포스트 조회 (day / week / month / year) |
+| 툴                    | 설명                                              |
+| --------------------- | ------------------------------------------------- |
+| `velog_search_posts`  | 키워드로 포스트 검색 (username 필터 지원)         |
+| `velog_get_trending`  | 트렌딩 포스트 조회 (day / week / month / year)    |
+| `velog_trend_report`  | 트렌딩 포스트 분석 → 개발 동향 리포트 데이터 반환 |
 
 ## 인증
 
