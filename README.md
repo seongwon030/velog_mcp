@@ -1,6 +1,6 @@
 # velog-mcp-claude
 
-Claude가 Velog에 직접 포스트를 작성하고 발행할 수 있는 MCP 서버.
+Claude가 Velog에 직접 포스트를 작성·발행·수정·삭제하고, 댓글·좋아요·검색·트렌딩까지 다룰 수 있는 MCP 서버.
 
 공개 API가 없는 Velog를 GraphQL 리버스 엔지니어링으로 지원합니다. draft → 사용자 검토 → publish의 human-in-the-loop 플로우로 설계되어, 자동화이면서도 사용자가 완전한 통제권을 유지합니다.
 
@@ -98,16 +98,39 @@ Claude: velog_publish_post(draft_id: "abc123", is_private: true)
 
 ## 툴 목록
 
+### 포스트
+
 | 툴                   | 설명                                |
 | -------------------- | ----------------------------------- |
 | `velog_draft_post`   | 포스트 초안 생성 (세션 메모리 저장) |
 | `velog_publish_post` | 초안을 Velog에 발행                 |
 | `velog_list_posts`   | 내 포스트 목록 조회                 |
 | `velog_get_post`     | 특정 포스트 전체 내용 조회          |
-| `velog_update_post`  | 기존 포스트 수정                    |
+| `velog_update_post`  | 기존 포스트 수정 (썸네일 포함)      |
 | `velog_delete_post`  | 포스트 삭제                         |
-| `velog_upload_image` | 로컬 이미지 파일을 Velog에 업로드   |
-| `velog_write_comment` | 포스트에 댓글 또는 대댓글 작성      |
+| `velog_upload_image` | 로컬 이미지 파일을 Velog CDN에 업로드 |
+
+### 댓글
+
+| 툴                    | 설명                              |
+| --------------------- | --------------------------------- |
+| `velog_get_comments`  | 포스트 댓글 목록 조회 (대댓글 포함) |
+| `velog_write_comment` | 댓글 또는 대댓글 작성             |
+| `velog_delete_comment`| 댓글 삭제                         |
+
+### 좋아요
+
+| 툴                  | 설명                  |
+| ------------------- | --------------------- |
+| `velog_like_post`   | 포스트 좋아요         |
+| `velog_unlike_post` | 포스트 좋아요 취소    |
+
+### 탐색
+
+| 툴                    | 설명                                              |
+| --------------------- | ------------------------------------------------- |
+| `velog_search_posts`  | 키워드로 포스트 검색 (username 필터 지원)         |
+| `velog_get_trending`  | 트렌딩 포스트 조회 (day / week / month / year)    |
 
 ## 인증
 
