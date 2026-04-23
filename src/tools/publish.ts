@@ -1,5 +1,5 @@
 import { graphql } from "../auth.js";
-import { getDraft, deleteDraft } from "./draft.js";
+import { deleteDraft, getDraft } from "./draft.js";
 
 const WRITE_POST = `
   mutation WritePost(
@@ -81,7 +81,7 @@ export async function publishPost(params: {
 
   deleteDraft(params.draft_id);
 
-  const { id, url_slug, user } = data.writePost!;
+  const { id, url_slug, user } = data.writePost;
   return {
     post_id: id,
     url_slug,

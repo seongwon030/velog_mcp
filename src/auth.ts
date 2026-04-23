@@ -1,7 +1,7 @@
-import fs from "fs";
-import os from "os";
-import path from "path";
-import readline from "readline";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import readline from "node:readline";
 
 const CONFIG_PATH = path.join(os.homedir(), ".velog-mcp.json");
 const GRAPHQL_URL = "https://v2.velog.io/graphql";
@@ -152,7 +152,7 @@ export async function runSetup(): Promise<void> {
     }
 
     saveConfig({ access_token, refresh_token });
-    console.log(`\n완료! @${data.auth!.username} 로 인증되었습니다.`);
+    console.log(`\n완료! @${data.auth?.username} 로 인증되었습니다.`);
     console.log(`설정 파일: ${CONFIG_PATH}`);
 
     await injectClaudeDesktopConfig();
@@ -209,7 +209,7 @@ async function injectClaudeDesktopConfig(): Promise<void> {
   }
 
   const mcpServers = (existing.mcpServers ?? {}) as Record<string, unknown>;
-  mcpServers["velog"] = {
+  mcpServers.velog = {
     command: "npx",
     args: ["-y", "velog-mcp-claude"],
   };

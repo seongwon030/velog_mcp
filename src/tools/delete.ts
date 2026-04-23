@@ -27,7 +27,10 @@ export async function deletePost(params: {
     signal: AbortSignal.timeout(10000),
   });
 
-  const json = await res.json() as { data?: { removePost: boolean }; errors?: { message: string }[] };
+  const json = (await res.json()) as {
+    data?: { removePost: boolean };
+    errors?: { message: string }[];
+  };
 
   if (json.errors?.length) {
     throw new Error(json.errors[0].message);

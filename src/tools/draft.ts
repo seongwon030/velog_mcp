@@ -38,7 +38,7 @@ export function getDraft(draft_id: string): Draft {
   const draft = drafts.get(draft_id);
   if (!draft) {
     throw new Error(
-      "draft_id가 존재하지 않습니다. velog_draft_post를 먼저 호출하세요."
+      "draft_id가 존재하지 않습니다. velog_draft_post를 먼저 호출하세요.",
     );
   }
   return draft;

@@ -31,14 +31,18 @@ export async function getTrending(params: {
     },
     signal: AbortSignal.timeout(10000),
   }).catch(() => {
-    throw new Error("Velog 트렌딩 API에 연결할 수 없습니다. 네트워크를 확인하세요.");
+    throw new Error(
+      "Velog 트렌딩 API에 연결할 수 없습니다. 네트워크를 확인하세요.",
+    );
   });
 
   if (!res.ok) {
-    throw new Error(`트렌딩 포스트를 가져오는 데 실패했습니다. (status: ${res.status})`);
+    throw new Error(
+      `트렌딩 포스트를 가져오는 데 실패했습니다. (status: ${res.status})`,
+    );
   }
 
-  const json = await res.json() as {
+  const json = (await res.json()) as {
     id: string;
     title: string;
     urlSlug: string;

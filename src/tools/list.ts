@@ -36,7 +36,7 @@ export async function listPosts(params: { limit?: number }): Promise<
 
   if (!userData.auth) {
     throw new Error(
-      "토큰이 만료됐거나 유효하지 않습니다. `npx velog_mcp setup`을 다시 실행하세요."
+      "토큰이 만료됐거나 유효하지 않습니다. `npx velog_mcp setup`을 다시 실행하세요.",
     );
   }
 

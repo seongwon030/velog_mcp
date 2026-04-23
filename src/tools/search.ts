@@ -21,14 +21,27 @@ export async function searchPosts(params: {
   username?: string;
 }): Promise<{
   count: number;
-  posts: { post_id: string; title: string; url_slug: string; username: string }[];
+  posts: {
+    post_id: string;
+    title: string;
+    url_slug: string;
+    username: string;
+  }[];
 }> {
   const { data } = await graphql<{
     searchPosts: {
       count: number;
-      posts: { id: string; title: string; url_slug: string; user: { username: string } }[];
+      posts: {
+        id: string;
+        title: string;
+        url_slug: string;
+        user: { username: string };
+      }[];
     };
-  }>(SEARCH_POSTS, { keyword: params.keyword, username: params.username ?? null });
+  }>(SEARCH_POSTS, {
+    keyword: params.keyword,
+    username: params.username ?? null,
+  });
 
   return {
     count: data.searchPosts.count,

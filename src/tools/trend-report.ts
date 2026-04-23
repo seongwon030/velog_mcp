@@ -10,11 +10,14 @@ const POST_TAGS = `
   }
 `;
 
-async function fetchTags(username: string, url_slug: string): Promise<string[]> {
+async function fetchTags(
+  username: string,
+  url_slug: string,
+): Promise<string[]> {
   try {
     const { data } = await graphql<{ post: { tags: string[] } | null }>(
       POST_TAGS,
-      { username, url_slug }
+      { username, url_slug },
     );
     return data.post?.tags ?? [];
   } catch {
@@ -69,7 +72,7 @@ export async function getTrendReport(params: {
   }[];
 
   const tagsResults = await Promise.all(
-    json.map((p) => fetchTags(p.user.username, p.urlSlug))
+    json.map((p) => fetchTags(p.user.username, p.urlSlug)),
   );
 
   return {

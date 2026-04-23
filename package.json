@@ -24,6 +24,8 @@
     "start": "node dist/index.js",
     "setup": "node dist/setup.js",
     "health": "node scripts/health-check.mjs",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write --unsafe .",
     "prepublishOnly": "npm run build"
   },
   "files": [
@@ -35,6 +37,7 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.12",
     "@types/node": "^22.0.0",
     "typescript": "^5.5.0"
   },

@@ -6,19 +6,18 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-
-import { createDraft } from "./tools/draft.js";
-import { publishPost } from "./tools/publish.js";
-import { listPosts } from "./tools/list.js";
-import { getPost } from "./tools/get.js";
-import { updatePost } from "./tools/update.js";
+import { deleteComment, getComments, writeComment } from "./tools/comment.js";
 import { deletePost } from "./tools/delete.js";
-import { uploadImage } from "./tools/upload.js";
-import { writeComment, deleteComment, getComments } from "./tools/comment.js";
+import { createDraft } from "./tools/draft.js";
+import { getPost } from "./tools/get.js";
 import { likePost, unlikePost } from "./tools/like.js";
+import { listPosts } from "./tools/list.js";
+import { publishPost } from "./tools/publish.js";
 import { searchPosts } from "./tools/search.js";
-import { getTrending } from "./tools/trending.js";
 import { getTrendReport } from "./tools/trend-report.js";
+import { getTrending } from "./tools/trending.js";
+import { updatePost } from "./tools/update.js";
+import { uploadImage } from "./tools/upload.js";
 
 const server = new Server(
   { name: "velog_mcp", version: "0.1.0" },

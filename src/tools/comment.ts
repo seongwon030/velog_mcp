@@ -1,4 +1,4 @@
-import { loadConfig, graphql } from "../auth.js";
+import { graphql, loadConfig } from "../auth.js";
 import { getPost } from "./get.js";
 
 const GET_POST_COMMENTS = `
@@ -43,9 +43,13 @@ type CommentItem = {
 export async function getComments(params: {
   url_slug: string;
 }): Promise<{ comments: CommentItem[] }> {
-  const { data: userData } = await graphql<{ auth: { username: string } | null }>(CURRENT_USER);
+  const { data: userData } = await graphql<{
+    auth: { username: string } | null;
+  }>(CURRENT_USER);
   if (!userData.auth) {
-    throw new Error("토큰이 만료됐거나 유효하지 않습니다. `npx -p velog-mcp-claude velog-mcp-setup`을 다시 실행하세요.");
+    throw new Error(
+      "토큰이 만료됐거나 유효하지 않습니다. `npx -p velog-mcp-claude velog-mcp-setup`을 다시 실행하세요.",
+    );
   }
 
   const { data } = await graphql<{
@@ -63,7 +67,10 @@ export async function getComments(params: {
         }[];
       }[];
     } | null;
-  }>(GET_POST_COMMENTS, { username: userData.auth.username, url_slug: params.url_slug });
+  }>(GET_POST_COMMENTS, {
+    username: userData.auth.username,
+    url_slug: params.url_slug,
+  });
 
   if (!data.post) {
     throw new Error(`포스트를 찾을 수 없습니다: ${params.url_slug}`);
@@ -120,7 +127,7 @@ export async function deleteComment(params: {
     );
   }
 
-  const json = await res.json() as {
+  const json = (await res.json()) as {
     data?: { removeComment: boolean | null };
     errors?: { message: string }[];
   };
@@ -178,8 +185,10 @@ export async function writeComment(params: {
     );
   }
 
-  const json = await res.json() as {
-    data?: { writeComment: { id: string; text: string; created_at: string } | null };
+  const json = (await res.json()) as {
+    data?: {
+      writeComment: { id: string; text: string; created_at: string } | null;
+    };
     errors?: { message: string }[];
   };
 

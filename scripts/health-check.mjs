@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-import fs from "fs";
-import os from "os";
-import path from "path";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 const GRAPHQL = "https://v2.velog.io/graphql";
-const TRENDING = "https://cache.velcdn.com/api/trending-posts?timeframe=week&limit=1";
+const TRENDING =
+  "https://cache.velcdn.com/api/trending-posts?timeframe=week&limit=1";
 const CONFIG_PATH = path.join(os.homedir(), ".velog-mcp.json");
 
 const GREEN = "\x1b[32m✓\x1b[0m";
@@ -12,7 +13,9 @@ const RED = "\x1b[31m✗\x1b[0m";
 
 function loadToken() {
   if (!fs.existsSync(CONFIG_PATH)) {
-    throw new Error("~/.velog-mcp.json 없음. npx -p velog-mcp-claude velog-mcp-setup 실행 필요");
+    throw new Error(
+      "~/.velog-mcp.json 없음. npx -p velog-mcp-claude velog-mcp-setup 실행 필요",
+    );
   }
   return JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
 }
@@ -83,7 +86,7 @@ async function checkRead(cfgRef) {
     cfgRef,
     "Posts",
     "query Posts($limit: Int) { posts(limit: $limit) { id } }",
-    { limit: 1 }
+    { limit: 1 },
   );
   if (!Array.isArray(data.posts)) throw new Error("posts 응답 비정상");
 }

@@ -61,7 +61,10 @@ export async function updatePost(params: {
     is_temp: false,
     is_private: params.is_private ?? current.is_private,
     url_slug: params.url_slug,
-    thumbnail: params.thumbnail !== undefined ? params.thumbnail : (current.thumbnail ?? null),
+    thumbnail:
+      params.thumbnail !== undefined
+        ? params.thumbnail
+        : (current.thumbnail ?? null),
     meta: { short_description: params.short_description ?? "" },
     series_id: null,
     token: null,
@@ -82,13 +85,22 @@ export async function updatePost(params: {
     }),
   });
 
-  const raw = await res.json() as { data?: { editPost: unknown } | null; errors?: { message: string }[] };
+  const raw = (await res.json()) as {
+    data?: { editPost: unknown } | null;
+    errors?: { message: string }[];
+  };
 
   if (!raw.data?.editPost) {
-    throw new Error(`editPost 실패. status=${res.status}, raw=${JSON.stringify(raw)}`);
+    throw new Error(
+      `editPost 실패. status=${res.status}, raw=${JSON.stringify(raw)}`,
+    );
   }
 
-  const post = raw.data.editPost as { id: string; url_slug: string; user: { username: string } };
+  const post = raw.data.editPost as {
+    id: string;
+    url_slug: string;
+    user: { username: string };
+  };
   return {
     post_id: post.id,
     url_slug: post.url_slug,

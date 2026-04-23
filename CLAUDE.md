@@ -1,4 +1,3 @@
-
 ## Skill routing
 
 When the user's request matches an available skill, invoke it via the Skill tool. The
@@ -7,6 +6,7 @@ results than an ad-hoc answer. When in doubt, invoke the skill. A false positive
 cheaper than a false negative.
 
 Key routing rules:
+
 - Product ideas, "is this worth building", brainstorming → invoke /office-hours
 - Strategy, scope, "think bigger", "what should we build" → invoke /plan-ceo-review
 - Architecture, "does this design make sense" → invoke /plan-eng-review
@@ -39,3 +39,8 @@ Key routing rules:
 - Review what gstack has learned → invoke /learn
 - Tune question sensitivity → invoke /plan-tune
 - Code quality dashboard → invoke /health
+
+## Health Stack
+
+- typecheck: tsc --noEmit
+- lint: biome check .
