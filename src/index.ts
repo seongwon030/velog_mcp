@@ -6,29 +6,33 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import { deleteComment, getComments, updateComment, writeComment } from "./tools/comment.js";
-import { deletePost } from "./tools/delete.js";
-import { createDraft } from "./tools/draft.js";
-import { getPost } from "./tools/get.js";
-import { likePost, unlikePost } from "./tools/like.js";
-import { listPosts } from "./tools/list.js";
-import { getNotifications } from "./tools/notifications.js";
-import { publishPost } from "./tools/publish.js";
-import { getReadingList } from "./tools/reading-list.js";
-import { getRss } from "./tools/rss.js";
-import { searchPosts } from "./tools/search.js";
 import {
   appendToSeries,
+  createDraft,
   createSeries,
+  deleteComment,
+  deletePost,
   deleteSeries,
+  getComments,
+  getNotifications,
+  getPost,
+  getReadingList,
+  getRss,
+  getTrendReport,
+  getTrending,
+  likePost,
+  listPosts,
   listSeries,
-} from "./tools/series.js";
-import { listTags } from "./tools/tags.js";
-import { listTempPosts } from "./tools/temp-posts.js";
-import { getTrendReport } from "./tools/trend-report.js";
-import { getTrending } from "./tools/trending.js";
-import { updatePost } from "./tools/update.js";
-import { uploadImage } from "./tools/upload.js";
+  listTags,
+  listTempPosts,
+  publishPost,
+  searchPosts,
+  unlikePost,
+  updateComment,
+  updatePost,
+  uploadImage,
+  writeComment,
+} from "./tools/index.js";
 
 const server = new Server(
   { name: "velog_mcp", version: "0.1.0" },
@@ -364,8 +368,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_list_tags",
-      description:
-        "내 Velog 태그 목록과 태그별 포스트 수를 조회합니다.",
+      description: "내 Velog 태그 목록과 태그별 포스트 수를 조회합니다.",
       inputSchema: { type: "object", properties: {} },
     },
     {
@@ -402,7 +405,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         properties: {
           series_id: {
             type: "string",
-            description: "시리즈 ID (velog_list_series 또는 velog_create_series 응답에서 확인)",
+            description:
+              "시리즈 ID (velog_list_series 또는 velog_create_series 응답에서 확인)",
           },
           post_id: { type: "string", description: "추가할 포스트 ID" },
         },
@@ -411,7 +415,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_delete_series",
-      description: "Velog 시리즈를 삭제합니다. 시리즈 내 포스트는 삭제되지 않습니다.",
+      description:
+        "Velog 시리즈를 삭제합니다. 시리즈 내 포스트는 삭제되지 않습니다.",
       inputSchema: {
         type: "object",
         properties: {
