@@ -89,6 +89,46 @@ query Posts($cursor: ID, $limit: Int) {
 
 ## 우선순위 중간
 
+### 알림 조회
+
+Velog에는 좋아요·댓글·팔로우 알림 기능이 있음. 읽지 않은 알림 수와 목록을 조회하는 API 확인 필요.
+
+**확인 필요 쿼리**: `notifications` 또는 `userNotifications`
+
+**구현 예정 툴**: `velog_get_notifications`
+
+**활용 시나리오**: "내 벨로그 알림 확인해줘", "읽지 않은 알림 있어?"
+
+---
+
+### 북마크(읽을 목록) 조회
+
+Velog의 "읽을 목록" 기능. 저장한 포스트 목록을 가져오는 API 확인 필요.
+
+**확인 필요 쿼리**: `readingList` 또는 `bookmarks`
+
+**구현 예정 툴**: `velog_get_reading_list`
+
+**활용 시나리오**: "내 읽을 목록 보여줘", "저장해둔 글 정리해줘"
+
+---
+
+### RSS 피드 파싱
+
+Velog는 유저별 RSS 피드를 인증 없이 제공함. 타 유저 최신 포스트 모니터링에 유용.
+
+**엔드포인트**: `https://v2.velog.io/rss/@{username}` (인증 불필요)
+
+**구현 예정 툴**: `velog_get_rss`
+
+**파라미터**: `username: string`
+
+**활용 시나리오**: "velopert 최신 글 보여줘", "이 유저 오늘 뭐 올렸어?"
+
+> 현재 `velog_search_posts`나 `velog_get_post`는 url_slug를 알아야 하지만, RSS는 최신순 목록을 바로 반환해 특정 유저 모니터링에 더 적합.
+
+---
+
 ### 댓글 수정
 
 현재 `velog_write_comment` / `velog_delete_comment`만 존재. 수정 기능이 빠져있음.
