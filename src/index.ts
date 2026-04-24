@@ -6,7 +6,7 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import { deleteComment, getComments, writeComment } from "./tools/comment.js";
+import { deleteComment, getComments, updateComment, writeComment } from "./tools/comment.js";
 import { deletePost } from "./tools/delete.js";
 import { createDraft } from "./tools/draft.js";
 import { getPost } from "./tools/get.js";
@@ -23,6 +23,8 @@ import {
   deleteSeries,
   listSeries,
 } from "./tools/series.js";
+import { listTags } from "./tools/tags.js";
+import { listTempPosts } from "./tools/temp-posts.js";
 import { getTrendReport } from "./tools/trend-report.js";
 import { getTrending } from "./tools/trending.js";
 import { updatePost } from "./tools/update.js";
@@ -215,6 +217,18 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       },
     },
     {
+      name: "velog_update_comment",
+      description: "Velog 댓글 내용을 수정합니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          comment_id: { type: "string", description: "수정할 댓글 ID" },
+          text: { type: "string", description: "새 댓글 내용" },
+        },
+        required: ["comment_id", "text"],
+      },
+    },
+    {
       name: "velog_get_comments",
       description:
         "특정 Velog 포스트의 댓글 목록을 가져옵니다. 댓글 ID를 확인하여 삭제에 활용할 수 있습니다.",
@@ -347,6 +361,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
         required: ["username"],
       },
+    },
+    {
+      name: "velog_list_tags",
+      description:
+        "내 Velog 태그 목록과 태그별 포스트 수를 조회합니다.",
+      inputSchema: { type: "object", properties: {} },
+    },
+    {
+      name: "velog_list_temp_posts",
+      description: "Velog 임시저장 포스트 목록을 가져옵니다.",
+      inputSchema: { type: "object", properties: {} },
     },
     {
       name: "velog_list_series",
@@ -510,6 +535,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 
+      case "velog_update_comment": {
+        const params = z
+          .object({ comment_id: z.string(), text: z.string() })
+          .parse(args);
+        const result = await updateComment(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
       case "velog_get_comments": {
         const params = z.object({ url_slug: z.string() }).parse(args);
         const result = await getComments(params);
@@ -578,6 +611,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "velog_get_rss": {
         const params = z.object({ username: z.string() }).parse(args);
         const result = await getRss(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_list_tags": {
+        const result = await listTags();
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_list_temp_posts": {
+        const result = await listTempPosts();
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 
