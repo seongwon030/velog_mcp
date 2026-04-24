@@ -12,7 +12,10 @@ import { createDraft } from "./tools/draft.js";
 import { getPost } from "./tools/get.js";
 import { likePost, unlikePost } from "./tools/like.js";
 import { listPosts } from "./tools/list.js";
+import { getNotifications } from "./tools/notifications.js";
 import { publishPost } from "./tools/publish.js";
+import { getReadingList } from "./tools/reading-list.js";
+import { getRss } from "./tools/rss.js";
 import { searchPosts } from "./tools/search.js";
 import { getTrendReport } from "./tools/trend-report.js";
 import { getTrending } from "./tools/trending.js";
@@ -271,6 +274,51 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
       },
     },
+    {
+      name: "velog_get_notifications",
+      description:
+        "내 Velog 알림 목록을 가져옵니다. 좋아요·댓글·팔로우 알림과 읽지 않은 알림 수를 반환합니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          mark_as_read: {
+            type: "boolean",
+            description: "조회 후 읽음 처리 여부 (기본값: false)",
+          },
+        },
+      },
+    },
+    {
+      name: "velog_get_reading_list",
+      description:
+        "내 Velog 읽을 목록(북마크)을 가져옵니다. 저장한 포스트 목록을 반환합니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          type: {
+            type: "string",
+            enum: ["READ", "LIKED"],
+            description:
+              "목록 유형: READ(읽을 목록) / LIKED(좋아요 목록) (기본값: READ)",
+          },
+        },
+      },
+    },
+    {
+      name: "velog_get_rss",
+      description:
+        "특정 Velog 유저의 RSS 피드를 가져옵니다. 인증 없이 최신 포스트 목록을 조회할 수 있습니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          username: {
+            type: "string",
+            description: "조회할 Velog 유저명 (예: velopert)",
+          },
+        },
+        required: ["username"],
+      },
+    },
   ],
 }));
 
@@ -423,6 +471,28 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           })
           .parse(args ?? {});
         const result = await getTrendReport(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_get_notifications": {
+        const params = z
+          .object({ mark_as_read: z.boolean().optional() })
+          .parse(args ?? {});
+        const result = await getNotifications(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_get_reading_list": {
+        const params = z
+          .object({ type: z.enum(["READ", "LIKED"]).optional() })
+          .parse(args ?? {});
+        const result = await getReadingList(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_get_rss": {
+        const params = z.object({ username: z.string() }).parse(args);
+        const result = await getRss(params);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 
