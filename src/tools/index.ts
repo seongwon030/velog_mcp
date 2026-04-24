@@ -23,6 +23,7 @@ export {
 } from "./series.js";
 export { listTags } from "./tags.js";
 export { listTempPosts } from "./temp-posts.js";
+export { importFromGitHub } from "./github-import.js";
 export { getTrendReport } from "./trend-report.js";
 export { getTrending } from "./trending.js";
 export { updatePost } from "./update.js";

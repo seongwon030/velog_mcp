@@ -20,6 +20,7 @@ import {
   getRss,
   getTrendReport,
   getTrending,
+  importFromGitHub,
   likePost,
   listPosts,
   listSeries,
@@ -425,6 +426,37 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["series_id"],
       },
     },
+    {
+      name: "velog_import_from_github",
+      description:
+        "GitHub 블로그 저장소의 마크다운 파일을 Velog 초안으로 가져옵니다. Jekyll/Hugo/기타 정적 블로그의 _posts 폴더를 지원합니다. dry_run: true로 먼저 미리보기를 확인하세요.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          repo: {
+            type: "string",
+            description: "GitHub 저장소 (예: octocat/my-blog)",
+          },
+          path: {
+            type: "string",
+            description: "마크다운 파일이 있는 폴더 경로 (예: _posts, content/posts). 생략 시 루트",
+          },
+          branch: {
+            type: "string",
+            description: "브랜치명 (기본값: main)",
+          },
+          github_token: {
+            type: "string",
+            description: "Private 저장소 접근 또는 API 한도 초과 시 GitHub Personal Access Token",
+          },
+          dry_run: {
+            type: "boolean",
+            description: "true이면 초안을 생성하지 않고 파싱 결과만 미리 보여줍니다 (기본값: false)",
+          },
+        },
+        required: ["repo"],
+      },
+    },
   ],
 }));
 
@@ -653,6 +685,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "velog_delete_series": {
         const params = z.object({ series_id: z.string() }).parse(args);
         const result = await deleteSeries(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_import_from_github": {
+        const params = z
+          .object({
+            repo: z.string(),
+            path: z.string().optional(),
+            branch: z.string().optional(),
+            github_token: z.string().optional(),
+            dry_run: z.boolean().optional(),
+          })
+          .parse(args);
+        const result = await importFromGitHub(params);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 
