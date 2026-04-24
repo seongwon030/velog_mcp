@@ -4,36 +4,26 @@ const GET_READING_LIST = `
   query GetReadingList($type: ReadingListOption, $cursor: ID) {
     readingList(type: $type, cursor: $cursor) {
       id
-      post {
-        id
-        title
-        url_slug
-        short_description
-        released_at
-        likes
-        user {
-          username
-        }
-        tags
+      title
+      url_slug
+      short_description
+      released_at
+      user {
+        username
       }
-      inserted_at
+      tags
     }
   }
 `;
 
-type ReadingListItem = {
+type ReadingListPost = {
   id: string;
-  post: {
-    id: string;
-    title: string;
-    url_slug: string;
-    short_description: string | null;
-    released_at: string;
-    likes: number;
-    user: { username: string };
-    tags: string[];
-  };
-  inserted_at: string;
+  title: string;
+  url_slug: string;
+  short_description: string | null;
+  released_at: string;
+  user: { username: string };
+  tags: string[];
 };
 
 export async function getReadingList(params: {
@@ -46,24 +36,20 @@ export async function getReadingList(params: {
     url: string;
     short_description: string | null;
     tags: string[];
-    likes: number;
     released_at: string;
-    saved_at: string;
   }[];
 }> {
-  const { data } = await graphql<{ readingList: ReadingListItem[] }>(
+  const { data } = await graphql<{ readingList: ReadingListPost[] }>(
     GET_READING_LIST,
     { type: params.type ?? "READ" },
   );
-  const items = (data.readingList ?? []).map((item: ReadingListItem) => ({
-    id: item.post.id,
-    title: item.post.title,
-    url: `https://velog.io/@${item.post.user.username}/${item.post.url_slug}`,
-    short_description: item.post.short_description,
-    tags: item.post.tags ?? [],
-    likes: item.post.likes,
-    released_at: item.post.released_at,
-    saved_at: item.inserted_at,
+  const items = (data.readingList ?? []).map((post: ReadingListPost) => ({
+    id: post.id,
+    title: post.title,
+    url: `https://velog.io/@${post.user.username}/${post.url_slug}`,
+    short_description: post.short_description,
+    tags: post.tags ?? [],
+    released_at: post.released_at,
   }));
 
   return { count: items.length, items };

@@ -1,99 +1,22 @@
 import { graphql } from "../auth.js";
 
-const GET_NOTIFICATIONS = `
-  query GetNotifications {
-    notifications {
-      id
-      type
-      message
-      is_read
-      created_at
-      actor {
-        id
-        username
-        profile {
-          thumbnail
-        }
-      }
-      post {
-        id
-        title
-        url_slug
-        user {
-          username
-        }
-      }
-    }
+const GET_NOTIFICATION_COUNT = `
+  query GetNotificationCount {
+    notificationCount
   }
 `;
 
-const READ_NOTIFICATIONS = `
-  mutation ReadNotifications {
-    readNotifications {
-      id
-    }
-  }
-`;
-
-type NotificationItem = {
-  id: string;
-  type: string;
-  message: string | null;
-  is_read: boolean;
-  created_at: string;
-  actor: {
-    id: string;
-    username: string;
-    profile: { thumbnail: string | null };
-  } | null;
-  post: {
-    id: string;
-    title: string;
-    url_slug: string;
-    user: { username: string };
-  } | null;
-};
-
-export async function getNotifications(params: {
+export async function getNotifications(_params: {
   mark_as_read?: boolean;
 }): Promise<{
   unread_count: number;
-  notifications: {
-    id: string;
-    type: string;
-    message: string | null;
-    is_read: boolean;
-    created_at: string;
-    actor_username: string | null;
-    post_title: string | null;
-    post_url: string | null;
-  }[];
+  note: string;
 }> {
-  const { data } = await graphql<{ notifications: NotificationItem[] }>(
-    GET_NOTIFICATIONS,
+  const { data } = await graphql<{ notificationCount: number }>(
+    GET_NOTIFICATION_COUNT,
   );
-  const items = data.notifications ?? [];
-
-  if (params.mark_as_read && items.some((n: NotificationItem) => !n.is_read)) {
-    await graphql(READ_NOTIFICATIONS).catch(() => null);
-  }
-
-  const notifications = items.map((n: NotificationItem) => ({
-    id: n.id,
-    type: n.type,
-    message: n.message,
-    is_read: n.is_read,
-    created_at: n.created_at,
-    actor_username: n.actor?.username ?? null,
-    post_title: n.post?.title ?? null,
-    post_url: n.post
-      ? `https://velog.io/@${n.post.user.username}/${n.post.url_slug}`
-      : null,
-  }));
-
   return {
-    unread_count: notifications.filter((n: { is_read: boolean }) => !n.is_read)
-      .length,
-    notifications,
+    unread_count: data.notificationCount ?? 0,
+    note: "Velog v2 API는 읽지 않은 알림 개수만 제공합니다. 개별 알림 목록은 API에서 지원되지 않습니다.",
   };
 }
