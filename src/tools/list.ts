@@ -9,8 +9,8 @@ const CURRENT_USER = `
 `;
 
 const GET_POSTS = `
-  query GetPosts($username: String!, $limit: Int) {
-    posts(username: $username, limit: $limit) {
+  query GetPosts($username: String!, $limit: Int, $cursor: ID, $tag: String) {
+    posts(username: $username, limit: $limit, cursor: $cursor, tag: $tag) {
       id
       title
       url_slug
@@ -20,27 +20,37 @@ const GET_POSTS = `
   }
 `;
 
-export async function listPosts(params: { limit?: number }): Promise<
-  {
+export async function listPosts(params: {
+  limit?: number;
+  cursor?: string;
+  tag?: string;
+  username?: string;
+}): Promise<{
+  posts: {
     post_id: string;
     title: string;
     url_slug: string;
     url: string;
     released_at: string;
     is_private: boolean;
-  }[]
-> {
-  const { data: userData } = await graphql<{
-    auth: { username: string } | null;
-  }>(CURRENT_USER);
+  }[];
+  next_cursor: string | null;
+}> {
+  let username = params.username;
 
-  if (!userData.auth) {
-    throw new Error(
-      "토큰이 만료됐거나 유효하지 않습니다. `npx velog_mcp setup`을 다시 실행하세요.",
-    );
+  if (!username) {
+    const { data: userData } = await graphql<{
+      auth: { username: string } | null;
+    }>(CURRENT_USER);
+    if (!userData.auth) {
+      throw new Error(
+        "토큰이 만료됐거나 유효하지 않습니다. `npx velog_mcp setup`을 다시 실행하세요.",
+      );
+    }
+    username = userData.auth.username;
   }
 
-  const username = userData.auth.username;
+  const limit = params.limit ?? 20;
   const { data } = await graphql<{
     posts: {
       id: string;
@@ -49,9 +59,14 @@ export async function listPosts(params: { limit?: number }): Promise<
       released_at: string;
       is_private: boolean;
     }[];
-  }>(GET_POSTS, { username, limit: params.limit ?? 20 });
+  }>(GET_POSTS, {
+    username,
+    limit,
+    cursor: params.cursor ?? null,
+    tag: params.tag ?? null,
+  });
 
-  return data.posts.map((p) => ({
+  const posts = data.posts.map((p) => ({
     post_id: p.id,
     title: p.title,
     url_slug: p.url_slug,
@@ -59,4 +74,9 @@ export async function listPosts(params: { limit?: number }): Promise<
     released_at: p.released_at,
     is_private: p.is_private,
   }));
+
+  const next_cursor =
+    posts.length === limit ? (data.posts[posts.length - 1]?.id ?? null) : null;
+
+  return { posts, next_cursor };
 }

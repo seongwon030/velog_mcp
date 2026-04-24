@@ -78,7 +78,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_list_posts",
-      description: "내 Velog 포스트 목록을 가져옵니다.",
+      description:
+        "Velog 포스트 목록을 가져옵니다. username을 지정하면 타 유저 포스트도 조회할 수 있습니다.",
       inputSchema: {
         type: "object",
         properties: {
@@ -86,16 +87,33 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
             type: "number",
             description: "가져올 포스트 수 (기본값: 20)",
           },
+          cursor: {
+            type: "string",
+            description: "페이지네이션 커서 (이전 응답의 next_cursor 값)",
+          },
+          tag: {
+            type: "string",
+            description: "태그 필터 (예: React, TypeScript)",
+          },
+          username: {
+            type: "string",
+            description: "조회할 유저명 (생략 시 본인 포스트)",
+          },
         },
       },
     },
     {
       name: "velog_get_post",
-      description: "특정 Velog 포스트의 전체 내용을 가져옵니다.",
+      description:
+        "특정 Velog 포스트의 전체 내용을 가져옵니다. username을 지정하면 타 유저 포스트도 조회할 수 있습니다.",
       inputSchema: {
         type: "object",
         properties: {
           url_slug: { type: "string", description: "포스트 URL slug" },
+          username: {
+            type: "string",
+            description: "포스트 작성자 유저명 (생략 시 본인)",
+          },
         },
         required: ["url_slug"],
       },
@@ -367,14 +385,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "velog_list_posts": {
         const params = z
-          .object({ limit: z.number().optional() })
+          .object({
+            limit: z.number().optional(),
+            cursor: z.string().optional(),
+            tag: z.string().optional(),
+            username: z.string().optional(),
+          })
           .parse(args ?? {});
-        const posts = await listPosts(params);
-        return { content: [{ type: "text", text: JSON.stringify(posts) }] };
+        const result = await listPosts(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 
       case "velog_get_post": {
-        const params = z.object({ url_slug: z.string() }).parse(args);
+        const params = z
+          .object({ url_slug: z.string(), username: z.string().optional() })
+          .parse(args);
         const post = await getPost(params);
         return { content: [{ type: "text", text: JSON.stringify(post) }] };
       }

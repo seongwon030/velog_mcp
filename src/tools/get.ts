@@ -24,7 +24,10 @@ const CURRENT_USER = `
   }
 `;
 
-export async function getPost(params: { url_slug: string }): Promise<{
+export async function getPost(params: {
+  url_slug: string;
+  username?: string;
+}): Promise<{
   post_id: string;
   title: string;
   body: string;
@@ -35,14 +38,18 @@ export async function getPost(params: { url_slug: string }): Promise<{
   thumbnail: string | null;
   released_at: string;
 }> {
-  const { data: userData } = await graphql<{
-    auth: { username: string } | null;
-  }>(CURRENT_USER);
+  let username = params.username;
 
-  if (!userData.auth) {
-    throw new Error(
-      "토큰이 만료됐거나 유효하지 않습니다. `npx velog_mcp setup`을 다시 실행하세요.",
-    );
+  if (!username) {
+    const { data: userData } = await graphql<{
+      auth: { username: string } | null;
+    }>(CURRENT_USER);
+    if (!userData.auth) {
+      throw new Error(
+        "토큰이 만료됐거나 유효하지 않습니다. `npx velog_mcp setup`을 다시 실행하세요.",
+      );
+    }
+    username = userData.auth.username;
   }
 
   const { data } = await graphql<{
@@ -57,10 +64,7 @@ export async function getPost(params: { url_slug: string }): Promise<{
       thumbnail: string | null;
       released_at: string;
     } | null;
-  }>(READ_POST, {
-    username: userData.auth.username,
-    url_slug: params.url_slug,
-  });
+  }>(READ_POST, { username, url_slug: params.url_slug });
 
   if (!data.post) {
     throw new Error(`포스트를 찾을 수 없습니다: ${params.url_slug}`);
