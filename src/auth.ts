@@ -74,7 +74,7 @@ export async function graphql<T>(
       query,
       variables,
     }),
-    signal: AbortSignal.timeout(5000),
+    signal: AbortSignal.timeout(15000),
   }).catch(() => {
     throw new Error("Velog API에 연결할 수 없습니다. 네트워크를 확인하세요.");
   });
