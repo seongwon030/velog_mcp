@@ -157,6 +157,12 @@ Claude: velog_publish_post(draft_id: "abc123", is_private: true)
 - 발행하지 않고 보존하려면 `velog_publish_post(is_private: true)`로 비공개 저장.
 - 이미지: 마크다운 외부 URL 참조 방식 (`![alt](url)`) 사용.
 
+## 로드맵
+
+구현 예정 기능과 아이디어는 [docs/roadmap.md](./docs/roadmap.md)에서 확인할 수 있습니다.
+
+시리즈 관리, 페이지네이션, 타 유저 포스트 조회 등이 예정되어 있습니다.
+
 ## 면책 조항
 
 - Velog의 공개 API가 없어 내부 GraphQL API를 리버스 엔지니어링하여 구현되었습니다.
