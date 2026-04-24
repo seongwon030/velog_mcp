@@ -98,19 +98,39 @@ Claude: velog_publish_post(draft_id: "abc123") 호출
 Claude: velog_publish_post(draft_id: "abc123", is_private: true)
 ```
 
+### GitHub 블로그 글 가져오기
+
+```
+나: "내 깃허브 블로그 _posts 폴더 글들을 벨로그 초안으로 옮겨줘"
+
+Claude: velog_import_from_github(repo: "username/my-blog", path: "_posts", dry_run: true)
+→ { imported: 5, posts: [{ title: "...", tags: [...] }, ...] }
+
+나: "좋아, 다 초안으로 만들어줘"
+
+Claude: velog_import_from_github(repo: "username/my-blog", path: "_posts")
+→ { imported: 5, posts: [{ title: "...", draft_id: "abc123" }, ...] }
+```
+
+- Jekyll / Hugo / mdBook 등 front matter가 있는 마크다운 형식을 지원합니다.
+- 상대 경로 이미지(`./images/foo.png`)는 GitHub raw URL로 자동 변환됩니다.
+- Private 저장소는 `github_token` 파라미터로 접근할 수 있습니다.
+- `dry_run: true`로 먼저 미리보기를 확인한 뒤 초안을 생성하는 것을 권장합니다.
+
 ## 툴 목록
 
 ### 포스트
 
-| 툴                   | 설명                                  |
-| -------------------- | ------------------------------------- |
-| `velog_draft_post`   | 포스트 초안 생성 (세션 메모리 저장)   |
-| `velog_publish_post` | 초안을 Velog에 발행                   |
-| `velog_list_posts`   | 내 포스트 목록 조회                   |
-| `velog_get_post`     | 특정 포스트 전체 내용 조회            |
-| `velog_update_post`  | 기존 포스트 수정 (썸네일 포함)        |
-| `velog_delete_post`  | 포스트 삭제                           |
-| `velog_upload_image` | 로컬 이미지 파일을 Velog CDN에 업로드 |
+| 툴                            | 설명                                                          |
+| ----------------------------- | ------------------------------------------------------------- |
+| `velog_draft_post`            | 포스트 초안 생성 (세션 메모리 저장)                           |
+| `velog_publish_post`          | 초안을 Velog에 발행                                           |
+| `velog_list_posts`            | 내 포스트 목록 조회                                           |
+| `velog_get_post`              | 특정 포스트 전체 내용 조회                                    |
+| `velog_update_post`           | 기존 포스트 수정 (썸네일 포함)                                |
+| `velog_delete_post`           | 포스트 삭제                                                   |
+| `velog_upload_image`          | 로컬 이미지 파일을 Velog CDN에 업로드                         |
+| `velog_import_from_github`    | GitHub 블로그 저장소의 마크다운 파일을 Velog 초안으로 가져오기 |
 
 ### 댓글
 
