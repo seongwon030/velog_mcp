@@ -17,6 +17,12 @@ import { publishPost } from "./tools/publish.js";
 import { getReadingList } from "./tools/reading-list.js";
 import { getRss } from "./tools/rss.js";
 import { searchPosts } from "./tools/search.js";
+import {
+  appendToSeries,
+  createSeries,
+  deleteSeries,
+  listSeries,
+} from "./tools/series.js";
 import { getTrendReport } from "./tools/trend-report.js";
 import { getTrending } from "./tools/trending.js";
 import { updatePost } from "./tools/update.js";
@@ -52,6 +58,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
             type: "string",
             description:
               "썸네일 이미지 URL (velog_upload_image로 업로드한 URL 또는 외부 URL)",
+          },
+          series_id: {
+            type: "string",
+            description:
+              "발행할 시리즈 ID (velog_list_series 또는 velog_create_series 응답에서 확인)",
           },
         },
         required: ["title", "body"],
@@ -337,6 +348,53 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["username"],
       },
     },
+    {
+      name: "velog_list_series",
+      description: "내 Velog 시리즈 목록을 조회합니다.",
+      inputSchema: { type: "object", properties: {} },
+    },
+    {
+      name: "velog_create_series",
+      description: "새 Velog 시리즈를 생성합니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "시리즈 이름" },
+          url_slug: {
+            type: "string",
+            description: "시리즈 URL slug (생략 시 이름으로 자동 생성)",
+          },
+        },
+        required: ["name"],
+      },
+    },
+    {
+      name: "velog_append_to_series",
+      description:
+        "포스트를 시리즈에 추가합니다. post_id는 velog_publish_post 또는 velog_list_posts 응답에서 확인할 수 있습니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          series_id: {
+            type: "string",
+            description: "시리즈 ID (velog_list_series 또는 velog_create_series 응답에서 확인)",
+          },
+          post_id: { type: "string", description: "추가할 포스트 ID" },
+        },
+        required: ["series_id", "post_id"],
+      },
+    },
+    {
+      name: "velog_delete_series",
+      description: "Velog 시리즈를 삭제합니다. 시리즈 내 포스트는 삭제되지 않습니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          series_id: { type: "string", description: "삭제할 시리즈 ID" },
+        },
+        required: ["series_id"],
+      },
+    },
   ],
 }));
 
@@ -354,6 +412,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             is_private: z.boolean().optional(),
             short_description: z.string().optional(),
             thumbnail: z.string().optional(),
+            series_id: z.string().optional(),
           })
           .parse(args);
         const draft = createDraft(params);
@@ -368,6 +427,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 title: draft.title,
                 tags: draft.tags,
                 is_private: draft.is_private,
+                series_id: draft.series_id ?? null,
                 body_preview: preview,
               }),
             },
@@ -518,6 +578,33 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "velog_get_rss": {
         const params = z.object({ username: z.string() }).parse(args);
         const result = await getRss(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_list_series": {
+        const result = await listSeries();
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_create_series": {
+        const params = z
+          .object({ name: z.string(), url_slug: z.string().optional() })
+          .parse(args);
+        const result = await createSeries(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_append_to_series": {
+        const params = z
+          .object({ series_id: z.string(), post_id: z.string() })
+          .parse(args);
+        const result = await appendToSeries(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_delete_series": {
+        const params = z.object({ series_id: z.string() }).parse(args);
+        const result = await deleteSeries(params);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 

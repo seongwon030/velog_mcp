@@ -69,7 +69,7 @@ export async function publishPost(params: {
     url_slug: titleToSlug(draft.title),
     thumbnail: draft.thumbnail ?? null,
     meta: { short_description: draft.short_description ?? "" },
-    series_id: null,
+    series_id: draft.series_id ?? null,
     token: null,
   });
 
