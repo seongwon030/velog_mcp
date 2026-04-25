@@ -33,6 +33,27 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Notify Slack on success
+        if: success()
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ":white_check_mark: CI 통과 — <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|워크플로우 보기>",
+              "attachments": [
+                {
+                  "color": "good",
+                  "fields": [
+                    { "title": "레포지토리", "value": "${{ github.repository }}", "short": true },
+                    { "title": "브랜치", "value": "${{ github.ref_name }}", "short": true },
+                    { "title": "커밋", "value": "${{ github.event.head_commit.message }}", "short": false }
+                  ]
+                }
+              ]
+            }
+
       - name: Notify Slack on failure
         if: failure()
         uses: slackapi/slack-github-action@v2.1.0
