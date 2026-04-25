@@ -38,7 +38,7 @@ const WRITE_POST = `
   }
 `;
 
-function titleToSlug(title: string): string {
+export function titleToSlug(title: string): string {
   const slug = title
     .toLowerCase()
     .replace(/[^a-z0-9가-힣\s-]/g, "")

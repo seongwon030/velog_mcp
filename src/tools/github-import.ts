@@ -7,7 +7,7 @@ interface GitHubFile {
   download_url: string | null;
 }
 
-function parseFrontMatter(content: string): {
+export function parseFrontMatter(content: string): {
   data: Record<string, unknown>;
   body: string;
 } {
@@ -60,7 +60,7 @@ function parseFrontMatter(content: string): {
   return { data, body: body.trim() };
 }
 
-function rewriteImageUrls(
+export function rewriteImageUrls(
   body: string,
   repo: string,
   branch: string,
