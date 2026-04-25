@@ -11,6 +11,7 @@ const READ_POST = `
       is_temp
       url_slug
       thumbnail
+      short_description
       released_at
     }
   }
@@ -36,6 +37,7 @@ export async function getPost(params: {
   is_temp: boolean;
   url_slug: string;
   thumbnail: string | null;
+  short_description: string;
   released_at: string;
 }> {
   let username = params.username;
@@ -62,6 +64,7 @@ export async function getPost(params: {
       is_temp: boolean;
       url_slug: string;
       thumbnail: string | null;
+      short_description: string;
       released_at: string;
     } | null;
   }>(READ_POST, { username, url_slug: params.url_slug });
@@ -79,6 +82,7 @@ export async function getPost(params: {
     is_temp: data.post.is_temp,
     url_slug: data.post.url_slug,
     thumbnail: data.post.thumbnail,
+    short_description: data.post.short_description,
     released_at: data.post.released_at,
   };
 }

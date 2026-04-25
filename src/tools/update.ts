@@ -1,4 +1,4 @@
-import { loadConfig } from "../auth.js";
+import { graphql } from "../auth.js";
 import { getPost } from "./get.js";
 
 const EDIT_POST = `
@@ -49,10 +49,11 @@ export async function updatePost(params: {
   short_description?: string;
   thumbnail?: string | null;
 }): Promise<{ post_id: string; url_slug: string; url: string }> {
-  const cfg = loadConfig();
   const current = await getPost({ url_slug: params.url_slug });
 
-  const variables = {
+  const { data } = await graphql<{
+    editPost: { id: string; url_slug: string; user: { username: string } } | null;
+  }>(EDIT_POST, {
     id: current.post_id,
     title: params.title ?? current.title,
     body: params.body ?? current.body,
@@ -62,48 +63,22 @@ export async function updatePost(params: {
     is_private: params.is_private ?? current.is_private,
     url_slug: params.url_slug,
     thumbnail:
-      params.thumbnail !== undefined
-        ? params.thumbnail
-        : (current.thumbnail ?? null),
-    meta: { short_description: params.short_description ?? "" },
+      params.thumbnail !== undefined ? params.thumbnail : (current.thumbnail ?? null),
+    meta: {
+      short_description: params.short_description ?? current.short_description ?? "",
+    },
     series_id: null,
     token: null,
-  };
-
-  const res = await fetch("https://v2.velog.io/graphql", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `access_token=${cfg.access_token}; refresh_token=${cfg.refresh_token}`,
-      Origin: "https://velog.io",
-      Referer: "https://velog.io/",
-    },
-    body: JSON.stringify({
-      operationName: "EditPost",
-      variables,
-      query: EDIT_POST,
-    }),
   });
 
-  const raw = (await res.json()) as {
-    data?: { editPost: unknown } | null;
-    errors?: { message: string }[];
-  };
-
-  if (!raw.data?.editPost) {
-    throw new Error(
-      `editPost 실패. status=${res.status}, raw=${JSON.stringify(raw)}`,
-    );
+  if (!data.editPost) {
+    throw new Error("포스트 수정에 실패했습니다. 토큰이 만료됐을 수 있습니다.");
   }
 
-  const post = raw.data.editPost as {
-    id: string;
-    url_slug: string;
-    user: { username: string };
-  };
+  const { id, url_slug, user } = data.editPost;
   return {
-    post_id: post.id,
-    url_slug: post.url_slug,
-    url: `https://velog.io/@${post.user.username}/${post.url_slug}`,
+    post_id: id,
+    url_slug,
+    url: `https://velog.io/@${user.username}/${url_slug}`,
   };
 }
