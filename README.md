@@ -4,8 +4,6 @@
 
 Claude가 Velog에 직접 포스트를 작성·발행·수정·삭제하고, 댓글·좋아요·검색·트렌딩까지 다룰 수 있는 MCP 서버.
 
-공개 API가 없는 Velog를 GraphQL 리버스 엔지니어링으로 지원합니다. draft → 사용자 검토 → publish의 human-in-the-loop 플로우로 설계되어, 자동화이면서도 사용자가 완전한 통제권을 유지합니다.
-
 **npm**: [velog-mcp-claude](https://www.npmjs.com/package/velog-mcp-claude) | **요구사항**: Node.js 18+
 
 ## 설치
@@ -16,51 +14,23 @@ npx -p velog-mcp-claude velog-mcp-setup
 
 Velog에 로그인한 상태에서 브라우저 DevTools → Application → Cookies → `https://velog.io`에서 `access_token`과 `refresh_token` 값을 복사해 입력하세요.
 
-토큰은 `~/.velog-mcp.json`에 `0600` 권한으로 저장됩니다. `.gitignore`에 추가하세요.
+토큰은 `~/.velog-mcp.json`에 `0600` 권한으로 저장됩니다.
 
-## Claude CLI (Claude Code) 설정
+## 설정
 
-### 프로젝트에 추가
+### Claude Code
 
 ```bash
 claude mcp add velog -- npx -y velog-mcp-claude
 ```
 
-또는 프로젝트의 `.claude/settings.json`에 직접 추가:
-
-```json
-{
-  "mcpServers": {
-    "velog": {
-      "command": "npx",
-      "args": ["-y", "velog-mcp-claude"]
-    }
-  }
-}
-```
-
-### 전역(글로벌)으로 추가
+전역으로 추가하려면:
 
 ```bash
 claude mcp add --scope global velog -- npx -y velog-mcp-claude
 ```
 
-글로벌 설정은 모든 프로젝트에서 사용 가능합니다.
-
-### 확인
-
-```bash
-claude mcp list
-```
-
-`velog` 서버가 목록에 표시되면 준비 완료. 이후 Claude Code 대화에서 바로 사용할 수 있습니다.
-
-```
-나: "React 훅에 대한 글 써줘"
-Claude: (velog_draft_post 호출 → 검토 후 발행)
-```
-
-## Claude Desktop 설정
+### Claude Desktop
 
 `~/Library/Application Support/Claude/claude_desktop_config.json`에 추가:
 
@@ -75,117 +45,69 @@ Claude: (velog_draft_post 호출 → 검토 후 발행)
 }
 ```
 
-## 사용법
-
-### 포스트 작성 및 발행
-
-```
-나: "React 19 concurrent features에 대한 글 써줘"
-
-Claude: velog_draft_post 호출
-→ { draft_id: "abc123", title: "React 19 Concurrent Features 정리", body_preview: "..." }
-
-나: "좋아, 발행해"
-
-Claude: velog_publish_post(draft_id: "abc123") 호출
-→ { url: "https://velog.io/@username/react-19-...", post_id: "..." }
-```
-
-### 비공개 발행
-
-```
-나: "이 글 비공개로 발행해줘"
-Claude: velog_publish_post(draft_id: "abc123", is_private: true)
-```
-
-### GitHub 블로그 글 가져오기
-
-```
-나: "내 깃허브 블로그 _posts 폴더 글들을 벨로그 초안으로 옮겨줘"
-
-Claude: velog_import_from_github(repo: "username/my-blog", path: "_posts", dry_run: true)
-→ { imported: 5, posts: [{ title: "...", tags: [...] }, ...] }
-
-나: "좋아, 다 초안으로 만들어줘"
-
-Claude: velog_import_from_github(repo: "username/my-blog", path: "_posts")
-→ { imported: 5, posts: [{ title: "...", draft_id: "abc123" }, ...] }
-```
-
-- Jekyll / Hugo / mdBook 등 front matter가 있는 마크다운 형식을 지원합니다.
-- 상대 경로 이미지(`./images/foo.png`)는 GitHub raw URL로 자동 변환됩니다.
-- Private 저장소는 `github_token` 파라미터로 접근할 수 있습니다.
-- `dry_run: true`로 먼저 미리보기를 확인한 뒤 초안을 생성하는 것을 권장합니다.
-
 ## 툴 목록
 
 ### 포스트
 
-| 툴                            | 설명                                                          |
-| ----------------------------- | ------------------------------------------------------------- |
-| `velog_draft_post`            | 포스트 초안 생성 (세션 메모리 저장)                           |
-| `velog_publish_post`          | 초안을 Velog에 발행                                           |
-| `velog_list_posts`            | 내 포스트 목록 조회                                           |
-| `velog_get_post`              | 특정 포스트 전체 내용 조회                                    |
-| `velog_update_post`           | 기존 포스트 수정 (썸네일 포함)                                |
-| `velog_delete_post`           | 포스트 삭제                                                   |
-| `velog_upload_image`          | 로컬 이미지 파일을 Velog CDN에 업로드                         |
-| `velog_import_from_github`    | GitHub 블로그 저장소의 마크다운 파일을 Velog 초안으로 가져오기 |
+| 툴 | 설명 |
+| --- | --- |
+| `velog_draft_post` | 포스트 초안 생성 |
+| `velog_publish_post` | 초안을 Velog에 발행 |
+| `velog_list_posts` | 내 포스트 목록 조회 |
+| `velog_get_post` | 특정 포스트 전체 내용 조회 |
+| `velog_update_post` | 기존 포스트 수정 |
+| `velog_delete_post` | 포스트 삭제 |
+| `velog_upload_image` | 로컬 이미지를 Velog CDN에 업로드 |
+| `velog_import_from_github` | GitHub 블로그 마크다운을 Velog 초안으로 가져오기 |
 
 ### 댓글
 
-| 툴                     | 설명                                |
-| ---------------------- | ----------------------------------- |
-| `velog_get_comments`   | 포스트 댓글 목록 조회 (대댓글 포함) |
-| `velog_write_comment`  | 댓글 또는 대댓글 작성               |
-| `velog_delete_comment` | 댓글 삭제                           |
+| 툴 | 설명 |
+| --- | --- |
+| `velog_get_comments` | 포스트 댓글 목록 조회 (대댓글 포함) |
+| `velog_write_comment` | 댓글 또는 대댓글 작성 |
+| `velog_delete_comment` | 댓글 삭제 |
 
 ### 좋아요
 
-| 툴                  | 설명               |
-| ------------------- | ------------------ |
-| `velog_like_post`   | 포스트 좋아요      |
+| 툴 | 설명 |
+| --- | --- |
+| `velog_like_post` | 포스트 좋아요 |
 | `velog_unlike_post` | 포스트 좋아요 취소 |
 
 ### 탐색
 
-| 툴                   | 설명                                              |
-| -------------------- | ------------------------------------------------- |
-| `velog_search_posts` | 키워드로 포스트 검색 (username 필터 지원)         |
-| `velog_get_trending` | 트렌딩 포스트 조회 (day / week / month / year)    |
-| `velog_trend_report` | 트렌딩 포스트 분석 → 개발 동향 리포트 데이터 반환 |
+| 툴 | 설명 |
+| --- | --- |
+| `velog_search_posts` | 키워드로 포스트 검색 |
+| `velog_get_trending` | 트렌딩 포스트 조회 (day / week / month / year) |
+| `velog_trend_report` | 트렌딩 포스트 분석 리포트 |
+
+## GitHub 블로그 마이그레이션
+
+Jekyll / Hugo 등 front matter가 있는 마크다운을 지원합니다. `dry_run: true`로 먼저 미리보기를 확인하세요.
+
+```
+나: "내 깃허브 블로그 _posts 폴더 글들을 벨로그 초안으로 옮겨줘"
+```
+
+- 상대 경로 이미지는 GitHub raw URL로 자동 변환
+- Private 저장소는 `github_token` 파라미터로 접근
 
 ## 인증
 
-- `access_token`: ~1-2시간 TTL. Velog 서버가 GraphQL 응답에 `Set-Cookie`로 자동 갱신.
-- `refresh_token`: ~30일 TTL. 만료 시 `npx -p velog-mcp-claude velog-mcp-setup` 재실행 필요.
-- 별도 refresh 엔드포인트 없음 — Velog 미들웨어가 자동 처리.
-
-## 에러 처리
-
-| 상황            | 메시지                                                                                              |
-| --------------- | --------------------------------------------------------------------------------------------------- |
-| 토큰 만료 (401) | `"토큰이 만료됐거나 유효하지 않습니다. npx -p velog-mcp-claude velog-mcp-setup을 다시 실행하세요."` |
-| 설정 파일 없음  | `"설정 파일이 없습니다. npx -p velog-mcp-claude velog-mcp-setup을 실행하세요."`                     |
-| 네트워크 오류   | `"Velog API에 연결할 수 없습니다. 네트워크를 확인하세요."`                                          |
-| 잘못된 draft_id | `"draft_id가 존재하지 않습니다. velog_draft_post를 먼저 호출하세요."`                               |
-| GraphQL 오류    | Velog 서버 에러 메시지 그대로 반환                                                                  |
+- `access_token`: ~1-2시간 TTL, Velog 서버가 자동 갱신
+- `refresh_token`: ~30일 TTL. 만료 시 `npx -p velog-mcp-claude velog-mcp-setup` 재실행
 
 ## 주의사항
 
-- draft는 MCP 서버 프로세스의 세션 메모리에 저장. Claude Desktop 재시작 시 소멸.
-- 발행하지 않고 보존하려면 `velog_publish_post(is_private: true)`로 비공개 저장.
-- 이미지: 마크다운 외부 URL 참조 방식 (`![alt](url)`) 사용.
+- draft는 MCP 서버 세션 메모리에 저장됨. 재시작 시 소멸.
+- 보존하려면 `velog_publish_post(is_private: true)`로 비공개 저장.
 
 ## 로드맵
 
-구현 예정 기능과 아이디어는 [docs/roadmap.md](./docs/roadmap.md)에서 확인할 수 있습니다.
-
-시리즈 관리, 페이지네이션, 타 유저 포스트 조회 등이 예정되어 있습니다.
+[docs/roadmap.md](./docs/roadmap.md) 참고.
 
 ## 면책 조항
 
-- Velog의 공개 API가 없어 내부 GraphQL API를 리버스 엔지니어링하여 구현되었습니다.
-- 추후 공식 API 지원이 제공될 경우 해당 방식으로 전환할 예정입니다.
-- API 구조 변경으로 인해 예고 없이 동작이 중단될 수 있습니다.
-- 본인 계정의 토큰만 사용하고, 타인의 계정 정보를 입력하지 마세요.
+내부 GraphQL API를 리버스 엔지니어링하여 구현되었습니다. API 구조 변경으로 예고 없이 동작이 중단될 수 있습니다.
