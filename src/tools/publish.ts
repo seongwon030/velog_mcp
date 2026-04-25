@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import { graphql } from "../auth.js";
 import { deleteDraft, getDraft } from "./draft.js";
 
@@ -38,12 +39,14 @@ const WRITE_POST = `
 `;
 
 function titleToSlug(title: string): string {
-  return title
+  const slug = title
     .toLowerCase()
     .replace(/[^a-z0-9가-힣\s-]/g, "")
     .trim()
     .replace(/\s+/g, "-")
+    .replace(/^-+/, "")
     .slice(0, 80);
+  return slug || nanoid(8);
 }
 
 export async function publishPost(params: {

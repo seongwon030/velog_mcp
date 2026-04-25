@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import { graphql } from "../auth.js";
 
 const CURRENT_USER = `
@@ -47,12 +48,14 @@ const DELETE_SERIES = `
 `;
 
 function nameToSlug(name: string): string {
-  return name
+  const slug = name
     .toLowerCase()
     .replace(/[^a-z0-9가-힣\s-]/g, "")
     .trim()
     .replace(/\s+/g, "-")
+    .replace(/^-+/, "")
     .slice(0, 80);
+  return slug || nanoid(8);
 }
 
 async function getUsername(): Promise<string> {

@@ -1,4 +1,4 @@
-import { graphql, loadConfig } from "../auth.js";
+import { graphql } from "../auth.js";
 import { getPost } from "./get.js";
 
 const GET_POST_COMMENTS = `
@@ -42,14 +42,20 @@ type CommentItem = {
 
 export async function getComments(params: {
   url_slug: string;
+  username?: string;
 }): Promise<{ comments: CommentItem[] }> {
-  const { data: userData } = await graphql<{
-    auth: { username: string } | null;
-  }>(CURRENT_USER);
-  if (!userData.auth) {
-    throw new Error(
-      "토큰이 만료됐거나 유효하지 않습니다. `npx -p velog-mcp-claude velog-mcp-setup`을 다시 실행하세요.",
-    );
+  let username = params.username;
+
+  if (!username) {
+    const { data: userData } = await graphql<{
+      auth: { username: string } | null;
+    }>(CURRENT_USER);
+    if (!userData.auth) {
+      throw new Error(
+        "토큰이 만료됐거나 유효하지 않습니다. `npx -p velog-mcp-claude velog-mcp-setup`을 다시 실행하세요.",
+      );
+    }
+    username = userData.auth.username;
   }
 
   const { data } = await graphql<{
@@ -68,7 +74,7 @@ export async function getComments(params: {
       }[];
     } | null;
   }>(GET_POST_COMMENTS, {
-    username: userData.auth.username,
+    username,
     url_slug: params.url_slug,
   });
 
@@ -101,41 +107,9 @@ const REMOVE_COMMENT = `
 export async function deleteComment(params: {
   comment_id: string;
 }): Promise<{ success: boolean; comment_id: string }> {
-  const cfg = loadConfig();
-
-  const res = await fetch("https://v2.velog.io/graphql", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `access_token=${cfg.access_token}; refresh_token=${cfg.refresh_token}`,
-      Origin: "https://velog.io",
-      Referer: "https://velog.io/",
-    },
-    body: JSON.stringify({
-      operationName: "RemoveComment",
-      query: REMOVE_COMMENT,
-      variables: { id: params.comment_id },
-    }),
-    signal: AbortSignal.timeout(10000),
-  }).catch(() => {
-    throw new Error("Velog API에 연결할 수 없습니다. 네트워크를 확인하세요.");
+  await graphql<{ removeComment: boolean }>(REMOVE_COMMENT, {
+    id: params.comment_id,
   });
-
-  if (res.status === 401) {
-    throw new Error(
-      "토큰이 만료됐거나 유효하지 않습니다. `npx -p velog-mcp-claude velog-mcp-setup`을 다시 실행하세요.",
-    );
-  }
-
-  const json = (await res.json()) as {
-    data?: { removeComment: boolean | null };
-    errors?: { message: string }[];
-  };
-
-  if (json.errors?.length) {
-    throw new Error(json.errors[0].message);
-  }
-
   return { success: true, comment_id: params.comment_id };
 }
 
@@ -153,48 +127,15 @@ export async function updateComment(params: {
   comment_id: string;
   text: string;
 }): Promise<{ comment_id: string; text: string; created_at: string }> {
-  const cfg = loadConfig();
+  const { data } = await graphql<{
+    editComment: { id: string; text: string; created_at: string } | null;
+  }>(EDIT_COMMENT, { id: params.comment_id, text: params.text });
 
-  const res = await fetch("https://v2.velog.io/graphql", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `access_token=${cfg.access_token}; refresh_token=${cfg.refresh_token}`,
-      Origin: "https://velog.io",
-      Referer: "https://velog.io/",
-    },
-    body: JSON.stringify({
-      operationName: "EditComment",
-      query: EDIT_COMMENT,
-      variables: { id: params.comment_id, text: params.text },
-    }),
-    signal: AbortSignal.timeout(10000),
-  }).catch(() => {
-    throw new Error("Velog API에 연결할 수 없습니다. 네트워크를 확인하세요.");
-  });
-
-  if (res.status === 401) {
-    throw new Error(
-      "토큰이 만료됐거나 유효하지 않습니다. `npx -p velog-mcp-claude velog-mcp-setup`을 다시 실행하세요.",
-    );
-  }
-
-  const json = (await res.json()) as {
-    data?: {
-      editComment: { id: string; text: string; created_at: string } | null;
-    };
-    errors?: { message: string }[];
-  };
-
-  if (json.errors?.length) {
-    throw new Error(json.errors[0].message);
-  }
-
-  if (!json.data?.editComment) {
+  if (!data.editComment) {
     throw new Error("댓글 수정에 실패했습니다.");
   }
 
-  const c = json.data.editComment;
+  const c = data.editComment;
   return { comment_id: c.id, text: c.text, created_at: c.created_at };
 }
 
@@ -213,52 +154,20 @@ export async function writeComment(params: {
   text: string;
   comment_id?: string;
 }): Promise<{ comment_id: string; text: string; created_at: string }> {
-  const cfg = loadConfig();
   const post = await getPost({ url_slug: params.url_slug });
 
-  const res = await fetch("https://v2.velog.io/graphql", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `access_token=${cfg.access_token}; refresh_token=${cfg.refresh_token}`,
-      Origin: "https://velog.io",
-      Referer: "https://velog.io/",
-    },
-    body: JSON.stringify({
-      operationName: "WriteComment",
-      query: WRITE_COMMENT,
-      variables: {
-        post_id: post.post_id,
-        text: params.text,
-        comment_id: params.comment_id ?? null,
-      },
-    }),
-    signal: AbortSignal.timeout(10000),
-  }).catch(() => {
-    throw new Error("Velog API에 연결할 수 없습니다. 네트워크를 확인하세요.");
+  const { data } = await graphql<{
+    writeComment: { id: string; text: string; created_at: string } | null;
+  }>(WRITE_COMMENT, {
+    post_id: post.post_id,
+    text: params.text,
+    comment_id: params.comment_id ?? null,
   });
 
-  if (res.status === 401) {
-    throw new Error(
-      "토큰이 만료됐거나 유효하지 않습니다. `npx -p velog-mcp-claude velog-mcp-setup`을 다시 실행하세요.",
-    );
-  }
-
-  const json = (await res.json()) as {
-    data?: {
-      writeComment: { id: string; text: string; created_at: string } | null;
-    };
-    errors?: { message: string }[];
-  };
-
-  if (json.errors?.length) {
-    throw new Error(json.errors[0].message);
-  }
-
-  if (!json.data?.writeComment) {
+  if (!data.writeComment) {
     throw new Error("댓글 작성에 실패했습니다.");
   }
 
-  const c = json.data.writeComment;
+  const c = data.writeComment;
   return { comment_id: c.id, text: c.text, created_at: c.created_at };
 }

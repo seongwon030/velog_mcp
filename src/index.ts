@@ -236,13 +236,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "velog_get_comments",
       description:
-        "특정 Velog 포스트의 댓글 목록을 가져옵니다. 댓글 ID를 확인하여 삭제에 활용할 수 있습니다.",
+        "특정 Velog 포스트의 댓글 목록을 가져옵니다. 댓글 ID를 확인하여 삭제에 활용할 수 있습니다. username을 지정하면 타 유저 포스트의 댓글도 조회할 수 있습니다.",
       inputSchema: {
         type: "object",
         properties: {
           url_slug: {
             type: "string",
             description: "댓글을 조회할 포스트의 URL slug",
+          },
+          username: {
+            type: "string",
+            description: "포스트 작성자 유저명 (생략 시 본인)",
           },
         },
         required: ["url_slug"],
@@ -581,7 +585,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "velog_get_comments": {
-        const params = z.object({ url_slug: z.string() }).parse(args);
+        const params = z
+          .object({ url_slug: z.string(), username: z.string().optional() })
+          .parse(args);
         const result = await getComments(params);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
