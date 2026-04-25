@@ -5,9 +5,10 @@ export {
   writeComment,
 } from "./comment.js";
 export { deletePost } from "./delete.js";
-export { createDraft, deleteDraft, getDraft } from "./draft.js";
 export type { Draft } from "./draft.js";
+export { createDraft, deleteDraft, getDraft } from "./draft.js";
 export { getPost } from "./get.js";
+export { importFromGitHub } from "./github-import.js";
 export { likePost, unlikePost } from "./like.js";
 export { listPosts } from "./list.js";
 export { getNotifications } from "./notifications.js";
@@ -23,7 +24,6 @@ export {
 } from "./series.js";
 export { listTags } from "./tags.js";
 export { listTempPosts } from "./temp-posts.js";
-export { importFromGitHub } from "./github-import.js";
 export { getTrendReport } from "./trend-report.js";
 export { getTrending } from "./trending.js";
 export { updatePost } from "./update.js";

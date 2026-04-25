@@ -187,7 +187,8 @@ export async function importFromGitHub(params: {
   let skipped = 0;
 
   for (const file of mdFiles) {
-    const raw = await fetchRaw(file.download_url!, github_token);
+    if (!file.download_url) continue;
+    const raw = await fetchRaw(file.download_url, github_token);
     const { data, body } = parseFrontMatter(raw);
 
     const title =

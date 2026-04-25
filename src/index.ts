@@ -18,8 +18,8 @@ import {
   getPost,
   getReadingList,
   getRss,
-  getTrendReport,
   getTrending,
+  getTrendReport,
   importFromGitHub,
   likePost,
   listPosts,
@@ -443,7 +443,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           },
           path: {
             type: "string",
-            description: "마크다운 파일이 있는 폴더 경로 (예: _posts, content/posts). 생략 시 루트",
+            description:
+              "마크다운 파일이 있는 폴더 경로 (예: _posts, content/posts). 생략 시 루트",
           },
           branch: {
             type: "string",
@@ -451,11 +452,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           },
           github_token: {
             type: "string",
-            description: "Private 저장소 접근 또는 API 한도 초과 시 GitHub Personal Access Token",
+            description:
+              "Private 저장소 접근 또는 API 한도 초과 시 GitHub Personal Access Token",
           },
           dry_run: {
             type: "boolean",
-            description: "true이면 초안을 생성하지 않고 파싱 결과만 미리 보여줍니다 (기본값: false)",
+            description:
+              "true이면 초안을 생성하지 않고 파싱 결과만 미리 보여줍니다 (기본값: false)",
           },
         },
         required: ["repo"],

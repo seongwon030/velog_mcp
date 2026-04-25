@@ -52,7 +52,11 @@ export async function updatePost(params: {
   const current = await getPost({ url_slug: params.url_slug });
 
   const { data } = await graphql<{
-    editPost: { id: string; url_slug: string; user: { username: string } } | null;
+    editPost: {
+      id: string;
+      url_slug: string;
+      user: { username: string };
+    } | null;
   }>(EDIT_POST, {
     id: current.post_id,
     title: params.title ?? current.title,
@@ -63,9 +67,12 @@ export async function updatePost(params: {
     is_private: params.is_private ?? current.is_private,
     url_slug: params.url_slug,
     thumbnail:
-      params.thumbnail !== undefined ? params.thumbnail : (current.thumbnail ?? null),
+      params.thumbnail !== undefined
+        ? params.thumbnail
+        : (current.thumbnail ?? null),
     meta: {
-      short_description: params.short_description ?? current.short_description ?? "",
+      short_description:
+        params.short_description ?? current.short_description ?? "",
     },
     series_id: null,
     token: null,
