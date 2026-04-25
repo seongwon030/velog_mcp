@@ -1,5 +1,28 @@
 import { createDraft } from "./draft.js";
 
+async function mapConcurrent<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<PromiseSettledResult<R>[]> {
+  const results = new Array<PromiseSettledResult<R>>(items.length);
+  let next = 0;
+  async function worker() {
+    while (next < items.length) {
+      const i = next++;
+      try {
+        results[i] = { status: "fulfilled", value: await fn(items[i]) };
+      } catch (reason) {
+        results[i] = { status: "rejected", reason };
+      }
+    }
+  }
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, worker),
+  );
+  return results;
+}
+
 interface GitHubFile {
   name: string;
   path: string;
@@ -137,6 +160,10 @@ async function fetchRaw(url: string, token?: string): Promise<string> {
     throw new Error("파일을 가져올 수 없습니다.");
   });
 
+  if (res.status === 403)
+    throw new Error(
+      "GitHub API 요청 한도 초과. github_token을 제공하면 한도가 높아집니다.",
+    );
   if (!res.ok) throw new Error(`파일 다운로드 실패: ${res.status}`);
   return res.text();
 }
@@ -157,6 +184,7 @@ export async function importFromGitHub(params: {
     tags: string[];
     draft_id?: string;
   }>;
+  failed: Array<{ source_file: string; error: string }>;
 }> {
   const { repo, branch = "main", github_token, dry_run = false } = params;
   const filePath = params.path ?? "";
@@ -184,55 +212,96 @@ export async function importFromGitHub(params: {
     tags: string[];
     draft_id?: string;
   }> = [];
+  const failed: Array<{ source_file: string; error: string }> = [];
   let skipped = 0;
 
-  for (const file of mdFiles) {
-    if (!file.download_url) continue;
-    const raw = await fetchRaw(file.download_url, github_token);
-    const { data, body } = parseFrontMatter(raw);
+  const CONCURRENCY = github_token ? 10 : 5;
 
-    const title =
-      (data.title as string | undefined) ??
-      file.name
-        .replace(/^\d{4}-\d{2}-\d{2}-/, "")
-        .replace(/\.md$/, "")
-        .replace(/[-_]/g, " ");
+  // Phase 1: 파일 fetch만 병렬로 — draft 생성 없음
+  type FetchedFile = {
+    file: GitHubFile;
+    title: string;
+    tags: string[];
+    processedBody: string;
+    shortDescription: string | undefined;
+  };
 
-    if (!body.trim()) {
+  const fetchSettled = await mapConcurrent(
+    mdFiles,
+    CONCURRENCY,
+    async (file): Promise<FetchedFile | null> => {
+      if (!file.download_url) return null;
+      const raw = await fetchRaw(file.download_url, github_token);
+      const { data, body } = parseFrontMatter(raw);
+
+      if (!body.trim()) return null;
+
+      const title =
+        (data.title as string | undefined) ??
+        file.name
+          .replace(/^\d{4}-\d{2}-\d{2}-/, "")
+          .replace(/\.md$/, "")
+          .replace(/[-_]/g, " ");
+
+      const tags: string[] = Array.isArray(data.tags)
+        ? (data.tags as string[])
+        : Array.isArray(data.categories)
+          ? (data.categories as string[])
+          : typeof data.tags === "string"
+            ? [data.tags as string]
+            : [];
+
+      return {
+        file,
+        title,
+        tags,
+        processedBody: rewriteImageUrls(body, repo, branch, file.path),
+        shortDescription: (data.description ?? data.excerpt ?? data.summary) as
+          | string
+          | undefined,
+      };
+    },
+  );
+
+  // rate limit 에러가 하나라도 있으면 draft 생성 전에 중단
+  for (let i = 0; i < fetchSettled.length; i++) {
+    const result = fetchSettled[i];
+    if (result.status === "rejected") {
+      const msg = (result.reason as Error).message;
+      if (msg.includes("한도 초과")) throw result.reason as Error;
+      failed.push({ source_file: mdFiles[i].path, error: msg });
+    }
+  }
+
+  // Phase 2: 네트워크 에러 없음 확인 후 draft 일괄 생성
+  for (let i = 0; i < fetchSettled.length; i++) {
+    const result = fetchSettled[i];
+    if (result.status === "rejected") continue; // already in failed
+    if (result.value === null) {
       skipped++;
       continue;
     }
 
-    const tags: string[] = Array.isArray(data.tags)
-      ? (data.tags as string[])
-      : Array.isArray(data.categories)
-        ? (data.categories as string[])
-        : typeof data.tags === "string"
-          ? [data.tags as string]
-          : [];
-
-    const processedBody = rewriteImageUrls(body, repo, branch, file.path);
-    const shortDescription = (data.description ??
-      data.excerpt ??
-      data.summary) as string | undefined;
+    const { file, title, tags, processedBody, shortDescription } = result.value;
 
     if (dry_run) {
       posts.push({ source_file: file.path, title, tags });
-    } else {
-      const draft = createDraft({
-        title,
-        body: processedBody,
-        tags,
-        short_description: shortDescription,
-      });
-      posts.push({
-        source_file: file.path,
-        title,
-        tags,
-        draft_id: draft.draft_id,
-      });
+      continue;
     }
+
+    const draft = createDraft({
+      title,
+      body: processedBody,
+      tags,
+      short_description: shortDescription,
+    });
+    posts.push({
+      source_file: file.path,
+      title,
+      tags,
+      draft_id: draft.draft_id,
+    });
   }
 
-  return { imported: posts.length, skipped, dry_run, posts };
+  return { imported: posts.length, skipped, dry_run, posts, failed };
 }
