@@ -149,6 +149,24 @@ async function fetchGitHubContents(
   return Array.isArray(data) ? (data as GitHubFile[]) : [data as GitHubFile];
 }
 
+async function collectMdFiles(
+  repo: string,
+  filePath: string,
+  branch: string,
+  token?: string,
+): Promise<GitHubFile[]> {
+  const entries = await fetchGitHubContents(repo, filePath, branch, token);
+  const mdFiles = entries.filter(
+    (f) => f.type === "file" && f.name.endsWith(".md") && f.download_url,
+  );
+  const subdirs = entries.filter((f) => f.type === "dir");
+  if (subdirs.length === 0) return mdFiles;
+  const subResults = await Promise.all(
+    subdirs.map((dir) => collectMdFiles(repo, dir.path, branch, token)),
+  );
+  return mdFiles.concat(...subResults);
+}
+
 async function fetchRaw(url: string, token?: string): Promise<string> {
   const headers: Record<string, string> = { "User-Agent": "velog-mcp" };
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -195,10 +213,7 @@ export async function importFromGitHub(params: {
     );
   }
 
-  const files = await fetchGitHubContents(repo, filePath, branch, github_token);
-  const mdFiles = files.filter(
-    (f) => f.type === "file" && f.name.endsWith(".md") && f.download_url,
-  );
+  const mdFiles = await collectMdFiles(repo, filePath, branch, github_token);
 
   if (mdFiles.length === 0) {
     throw new Error(

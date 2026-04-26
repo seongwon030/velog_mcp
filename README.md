@@ -94,6 +94,19 @@ Jekyll / Hugo 등 front matter가 있는 마크다운을 지원합니다. `dry_r
 - 상대 경로 이미지는 GitHub raw URL로 자동 변환
 - Private 저장소는 `github_token` 파라미터로 접근
 
+### GitHub API 한도 초과 시
+
+토큰 없이 사용하면 60회/시간 제한이 있습니다. `dry_run: true` 한 번만으로도 한도의 상당 부분이 소진될 수 있습니다.
+
+한도를 초과하면 `github_token`을 발급해 전달하세요.
+
+**토큰 발급**: GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token
+
+- 공개 저장소: 스코프 없이 생성해도 되지만, **`public_repo`를 체크하면 확실합니다**
+- 비공개 저장소: `repo` 체크
+
+토큰을 전달하면 5,000회/시간으로 한도가 올라갑니다.
+
 ## 인증
 
 - `access_token`: ~1-2시간 TTL, Velog 서버가 자동 갱신
