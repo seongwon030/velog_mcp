@@ -114,7 +114,7 @@ Jekyll / Hugo 등 front matter가 있는 마크다운을 지원합니다. `dry_r
 
 ## 주의사항
 
-- draft는 MCP 서버 세션 메모리에 저장됨. 재시작 시 소멸.
+- draft는 MCP 서버 세션 메모리에 저장됨. 재시작 시 소멸, 24시간 후 자동 만료.
 - 보존하려면 `velog_publish_post(is_private: true)`로 비공개 저장.
 
 ## 로드맵
