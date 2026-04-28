@@ -1,4 +1,7 @@
-import { ERR_GITHUB_NETWORK, ERR_GITHUB_RATE_LIMIT } from "../../constants/errors.js";
+import {
+  ERR_GITHUB_NETWORK,
+  ERR_GITHUB_RATE_LIMIT,
+} from "../../constants/errors.js";
 import type { GitHubFile } from "./parse.js";
 
 export async function mapConcurrent<T, R>(

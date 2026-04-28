@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { parseFrontMatter, rewriteImageUrls } from "../tools/github-import/parse.js";
+import {
+  parseFrontMatter,
+  rewriteImageUrls,
+} from "../tools/github-import/parse.js";
 
 describe("parseFrontMatter", () => {
   it("returns empty data and full content when no front matter", () => {
