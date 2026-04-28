@@ -1,3 +1,4 @@
+import { ERR_GITHUB_NETWORK, ERR_GITHUB_RATE_LIMIT } from "../../constants/errors.js";
 import type { GitHubFile } from "./parse.js";
 
 export async function mapConcurrent<T, R>(
@@ -43,17 +44,14 @@ export async function fetchGitHubContents(
     headers,
     signal: AbortSignal.timeout(15000),
   }).catch(() => {
-    throw new Error("GitHub API에 연결할 수 없습니다. 네트워크를 확인하세요.");
+    throw new Error(ERR_GITHUB_NETWORK);
   });
 
   if (res.status === 404)
     throw new Error(
       `GitHub 경로를 찾을 수 없습니다: ${repo}/${filePath || "(root)"}`,
     );
-  if (res.status === 403)
-    throw new Error(
-      "GitHub API 요청 한도 초과. github_token을 제공하면 한도가 높아집니다.",
-    );
+  if (res.status === 403) throw new Error(ERR_GITHUB_RATE_LIMIT);
   if (!res.ok) throw new Error(`GitHub API 오류: ${res.status}`);
 
   const data = await res.json();
@@ -89,10 +87,7 @@ export async function fetchRaw(url: string, token?: string): Promise<string> {
     throw new Error("파일을 가져올 수 없습니다.");
   });
 
-  if (res.status === 403)
-    throw new Error(
-      "GitHub API 요청 한도 초과. github_token을 제공하면 한도가 높아집니다.",
-    );
+  if (res.status === 403) throw new Error(ERR_GITHUB_RATE_LIMIT);
   if (!res.ok) throw new Error(`파일 다운로드 실패: ${res.status}`);
   return res.text();
 }

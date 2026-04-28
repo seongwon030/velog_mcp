@@ -1,4 +1,5 @@
 import { graphql } from "../auth.js";
+import { ERR_TOKEN_EXPIRED } from "../constants/errors.js";
 
 const CURRENT_USER = `
   query {
@@ -13,9 +14,7 @@ export async function getCurrentUsername(): Promise<string> {
     CURRENT_USER,
   );
   if (!data.auth) {
-    throw new Error(
-      "토큰이 만료됐거나 유효하지 않습니다. `npx velog_mcp setup`을 다시 실행하세요.",
-    );
+    throw new Error(ERR_TOKEN_EXPIRED);
   }
   return data.auth.username;
 }

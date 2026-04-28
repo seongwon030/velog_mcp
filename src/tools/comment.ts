@@ -1,4 +1,5 @@
 import { graphql } from "../auth.js";
+import { getCurrentUsername } from "../utils/auth-helpers.js";
 import { getPost } from "./get.js";
 
 const GET_POST_COMMENTS = `
@@ -24,14 +25,6 @@ const GET_POST_COMMENTS = `
   }
 `;
 
-const CURRENT_USER = `
-  query {
-    auth {
-      username
-    }
-  }
-`;
-
 type CommentItem = {
   id: string;
   text: string;
@@ -47,15 +40,7 @@ export async function getComments(params: {
   let username = params.username;
 
   if (!username) {
-    const { data: userData } = await graphql<{
-      auth: { username: string } | null;
-    }>(CURRENT_USER);
-    if (!userData.auth) {
-      throw new Error(
-        "토큰이 만료됐거나 유효하지 않습니다. `npx -p velog-mcp-claude velog-mcp-setup`을 다시 실행하세요.",
-      );
-    }
-    username = userData.auth.username;
+    username = await getCurrentUsername();
   }
 
   const { data } = await graphql<{

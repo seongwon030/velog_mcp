@@ -1,12 +1,5 @@
 import { graphql } from "../auth.js";
-
-const CURRENT_USER = `
-  query {
-    auth {
-      username
-    }
-  }
-`;
+import { getCurrentUsername } from "../utils/auth-helpers.js";
 
 const GET_TEMP_POSTS = `
   query GetTempPosts($username: String!) {
@@ -27,14 +20,7 @@ export async function listTempPosts(): Promise<{
     updated_at: string;
   }[];
 }> {
-  const { data: userData } = await graphql<{
-    auth: { username: string } | null;
-  }>(CURRENT_USER);
-  if (!userData.auth) {
-    throw new Error(
-      "토큰이 만료됐거나 유효하지 않습니다. `npx -p velog-mcp-claude velog-mcp-setup`을 다시 실행하세요.",
-    );
-  }
+  const username = await getCurrentUsername();
 
   const { data } = await graphql<{
     posts: {
@@ -43,7 +29,7 @@ export async function listTempPosts(): Promise<{
       url_slug: string;
       updated_at: string;
     }[];
-  }>(GET_TEMP_POSTS, { username: userData.auth.username });
+  }>(GET_TEMP_POSTS, { username });
 
   return {
     posts: data.posts.map((p) => ({

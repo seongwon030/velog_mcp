@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { loadConfig } from "../auth.js";
+import { ERR_TOKEN_EXPIRED, ERR_VELOG_NETWORK } from "../constants/errors.js";
 
 export async function uploadImage(params: {
   file_path: string;
@@ -43,13 +44,11 @@ export async function uploadImage(params: {
     body: formData,
     signal: AbortSignal.timeout(30000),
   }).catch(() => {
-    throw new Error("Velog API에 연결할 수 없습니다. 네트워크를 확인하세요.");
+    throw new Error(ERR_VELOG_NETWORK);
   });
 
   if (res.status === 401) {
-    throw new Error(
-      "토큰이 만료됐거나 유효하지 않습니다. `npx -p velog-mcp-claude velog-mcp-setup`을 다시 실행하세요.",
-    );
+    throw new Error(ERR_TOKEN_EXPIRED);
   }
 
   const json = (await res.json()) as { path?: string; message?: string };
