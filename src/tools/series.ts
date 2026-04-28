@@ -17,11 +17,12 @@ const USER_SERIES_LIST = `
 `;
 
 const CREATE_SERIES = `
-  mutation CreateSeries($name: String!, $url_slug: String!) {
-    createSeries(name: $name, url_slug: $url_slug) {
+  mutation CreateSeries($name: String!, $url_slug: String!, $description: String) {
+    createSeries(name: $name, url_slug: $url_slug, description: $description) {
       id
       name
       url_slug
+      description
     }
   }
 `;
@@ -30,6 +31,16 @@ const APPEND_TO_SERIES = `
   mutation AppendToSeries($series_id: ID!, $post_id: ID!) {
     appendToSeries(series_id: $series_id, post_id: $post_id) {
       id
+    }
+  }
+`;
+
+const EDIT_SERIES = `
+  mutation EditSeries($id: ID!, $name: String!, $url_slug: String!) {
+    editSeries(id: $id, name: $name, url_slug: $url_slug) {
+      id
+      name
+      url_slug
     }
   }
 `;
@@ -83,18 +94,29 @@ export async function listSeries(): Promise<{
 export async function createSeries(params: {
   name: string;
   url_slug?: string;
+  description?: string;
 }): Promise<{
   series_id: string;
   name: string;
   url_slug: string;
+  description: string | null;
   url: string;
 }> {
   const username = await getCurrentUsername();
   const url_slug = params.url_slug ?? toSlug(params.name);
 
   const { data } = await graphql<{
-    createSeries: { id: string; name: string; url_slug: string } | null;
-  }>(CREATE_SERIES, { name: params.name, url_slug });
+    createSeries: {
+      id: string;
+      name: string;
+      url_slug: string;
+      description: string | null;
+    } | null;
+  }>(CREATE_SERIES, {
+    name: params.name,
+    url_slug,
+    description: params.description ?? null,
+  });
 
   if (!data.createSeries) {
     throw new Error("시리즈 생성에 실패했습니다.");
@@ -104,6 +126,7 @@ export async function createSeries(params: {
     series_id: data.createSeries.id,
     name: data.createSeries.name,
     url_slug: data.createSeries.url_slug,
+    description: data.createSeries.description,
     url: `https://velog.io/@${username}/series/${data.createSeries.url_slug}`,
   };
 }
@@ -127,6 +150,35 @@ export async function appendToSeries(params: {
     success: true,
     series_id: params.series_id,
     post_id: params.post_id,
+  };
+}
+
+export async function updateSeries(params: {
+  series_id: string;
+  name: string;
+  url_slug?: string;
+}): Promise<{
+  series_id: string;
+  name: string;
+  url_slug: string;
+  url: string;
+}> {
+  const username = await getCurrentUsername();
+  const url_slug = params.url_slug ?? toSlug(params.name);
+
+  const { data } = await graphql<{
+    editSeries: { id: string; name: string; url_slug: string } | null;
+  }>(EDIT_SERIES, { id: params.series_id, name: params.name, url_slug });
+
+  if (!data.editSeries) {
+    throw new Error("시리즈 수정에 실패했습니다.");
+  }
+
+  return {
+    series_id: data.editSeries.id,
+    name: data.editSeries.name,
+    url_slug: data.editSeries.url_slug,
+    url: `https://velog.io/@${username}/series/${data.editSeries.url_slug}`,
   };
 }
 

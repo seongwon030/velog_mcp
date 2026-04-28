@@ -13,6 +13,7 @@ import {
   deleteComment,
   deletePost,
   deleteSeries,
+  updateSeries,
   getComments,
   getNotifications,
   getPost,
@@ -159,6 +160,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           thumbnail: {
             type: "string",
             description: "새 썸네일 URL. null을 넘기면 썸네일 제거",
+          },
+          series_id: {
+            type: "string",
+            description:
+              "포스트를 추가할 시리즈 ID. null을 넘기면 시리즈에서 제거. 생략하면 현재 시리즈 유지",
           },
         },
         required: ["url_slug"],
@@ -398,8 +404,25 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
             type: "string",
             description: "시리즈 URL slug (생략 시 이름으로 자동 생성)",
           },
+          description: { type: "string", description: "시리즈 설명" },
         },
         required: ["name"],
+      },
+    },
+    {
+      name: "velog_update_series",
+      description: "Velog 시리즈의 이름 또는 URL slug를 수정합니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          series_id: { type: "string", description: "수정할 시리즈 ID" },
+          name: { type: "string", description: "새 시리즈 이름" },
+          url_slug: {
+            type: "string",
+            description: "새 URL slug (생략 시 이름으로 자동 생성)",
+          },
+        },
+        required: ["series_id", "name"],
       },
     },
     {
@@ -574,6 +597,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             is_private: z.boolean().optional(),
             short_description: z.string().optional(),
             thumbnail: z.string().nullable().optional(),
+            series_id: z.string().nullable().optional(),
           })
           .parse(args);
         const result = await updatePost(params);
@@ -708,9 +732,25 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "velog_create_series": {
         const params = z
-          .object({ name: z.string(), url_slug: z.string().optional() })
+          .object({
+            name: z.string(),
+            url_slug: z.string().optional(),
+            description: z.string().optional(),
+          })
           .parse(args);
         const result = await createSeries(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_update_series": {
+        const params = z
+          .object({
+            series_id: z.string(),
+            name: z.string(),
+            url_slug: z.string().optional(),
+          })
+          .parse(args);
+        const result = await updateSeries(params);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 

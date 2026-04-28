@@ -15,6 +15,9 @@ const READ_POST = `
       short_description
       released_at
       views
+      series {
+        id
+      }
     }
   }
 `;
@@ -34,6 +37,7 @@ export async function getPost(params: {
   short_description: string;
   released_at: string;
   views: number;
+  series_id: string | null;
 }> {
   let username = params.username;
 
@@ -54,6 +58,7 @@ export async function getPost(params: {
       short_description: string;
       released_at: string;
       views: number;
+      series: { id: string } | null;
     } | null;
   }>(READ_POST, { username, url_slug: params.url_slug });
 
@@ -73,5 +78,6 @@ export async function getPost(params: {
     short_description: data.post.short_description,
     released_at: data.post.released_at,
     views: data.post.views,
+    series_id: data.post.series?.id ?? null,
   };
 }

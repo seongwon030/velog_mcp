@@ -21,6 +21,7 @@ export {
   createSeries,
   deleteSeries,
   listSeries,
+  updateSeries,
 } from "./series.js";
 export { listTags } from "./tags.js";
 export { listTempPosts } from "./temp-posts.js";
