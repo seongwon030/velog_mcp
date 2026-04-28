@@ -59,6 +59,17 @@ claude mcp add --scope global velog -- npx -y velog-mcp-claude
 | `velog_delete_post` | 포스트 삭제 |
 | `velog_upload_image` | 로컬 이미지를 Velog CDN에 업로드 |
 | `velog_import_from_github` | GitHub 블로그 마크다운을 Velog 초안으로 가져오기 |
+| `velog_git_to_post` | git 커밋 이력과 diff를 분석해 블로그 초안 프롬프트 생성 |
+
+### 시리즈
+
+| 툴 | 설명 |
+| --- | --- |
+| `velog_list_series` | 내 시리즈 목록 조회 |
+| `velog_create_series` | 새 시리즈 생성 |
+| `velog_update_series` | 시리즈 이름·설명 수정 |
+| `velog_append_to_series` | 포스트를 시리즈에 추가 |
+| `velog_delete_series` | 시리즈 삭제 |
 
 ### 댓글
 
@@ -66,6 +77,7 @@ claude mcp add --scope global velog -- npx -y velog-mcp-claude
 | --- | --- |
 | `velog_get_comments` | 포스트 댓글 목록 조회 (대댓글 포함) |
 | `velog_write_comment` | 댓글 또는 대댓글 작성 |
+| `velog_update_comment` | 댓글 수정 |
 | `velog_delete_comment` | 댓글 삭제 |
 
 ### 좋아요
@@ -83,6 +95,22 @@ claude mcp add --scope global velog -- npx -y velog-mcp-claude
 | `velog_get_trending` | 트렌딩 포스트 조회 (day / week / month / year) |
 | `velog_trend_report` | 트렌딩 포스트 분석 리포트 |
 | `velog_topic_research` | 트렌딩 태그 × 내 포스트 교차분석으로 아직 안 쓴 인기 주제 발굴 |
+
+## git 커밋 → 블로그 초안
+
+최근 커밋 이력과 diff를 분석해 Claude가 한국어 기술 블로그 포스트를 자동으로 작성합니다.
+
+```
+나: "오늘 작업한 커밋들로 벨로그 포스트 작성해줘"
+나: "지난 10개 커밋 기반으로 블로그 글 써줘"
+나: "v0.19.0 태그 이후 변경사항으로 포스트 초안 만들어줘"
+```
+
+- `repo_path`: 분석할 로컬 git 저장소 경로 (기본값: 현재 디렉터리)
+- `commits`: 가져올 최근 커밋 수 (기본값: 5)
+- `since`: 특정 커밋·태그 이후 범위 지정 (예: `v0.19.0`, `HEAD~10`)
+- `include_diff`: 코드 diff 포함 여부 (기본값: `true`)
+- `tags`: 포스트에 넣을 태그 힌트 (미지정 시 파일 확장자로 자동 추론)
 
 ## GitHub 블로그 마이그레이션
 
