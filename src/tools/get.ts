@@ -1,4 +1,5 @@
 import { graphql } from "../auth.js";
+import { getCurrentUsername } from "../utils/auth-helpers.js";
 
 const READ_POST = `
   query ReadPost($username: String!, $url_slug: String!) {
@@ -14,14 +15,6 @@ const READ_POST = `
       short_description
       released_at
       views
-    }
-  }
-`;
-
-const CURRENT_USER = `
-  query {
-    auth {
-      username
     }
   }
 `;
@@ -45,15 +38,7 @@ export async function getPost(params: {
   let username = params.username;
 
   if (!username) {
-    const { data: userData } = await graphql<{
-      auth: { username: string } | null;
-    }>(CURRENT_USER);
-    if (!userData.auth) {
-      throw new Error(
-        "토큰이 만료됐거나 유효하지 않습니다. `npx velog_mcp setup`을 다시 실행하세요.",
-      );
-    }
-    username = userData.auth.username;
+    username = await getCurrentUsername();
   }
 
   const { data } = await graphql<{

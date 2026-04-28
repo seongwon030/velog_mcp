@@ -1,13 +1,6 @@
-import { nanoid } from "nanoid";
 import { graphql } from "../auth.js";
-
-const CURRENT_USER = `
-  query {
-    auth {
-      username
-    }
-  }
-`;
+import { getCurrentUsername } from "../utils/auth-helpers.js";
+import { toSlug } from "../utils/slug.js";
 
 const USER_SERIES_LIST = `
   query SeriesList($username: String!) {
@@ -47,29 +40,6 @@ const DELETE_SERIES = `
   }
 `;
 
-function nameToSlug(name: string): string {
-  const slug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9가-힣\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/^-+/, "")
-    .slice(0, 80);
-  return slug || nanoid(8);
-}
-
-async function getUsername(): Promise<string> {
-  const { data } = await graphql<{ auth: { username: string } | null }>(
-    CURRENT_USER,
-  );
-  if (!data.auth) {
-    throw new Error(
-      "토큰이 만료됐거나 유효하지 않습니다. `npx velog_mcp setup`을 다시 실행하세요.",
-    );
-  }
-  return data.auth.username;
-}
-
 export async function listSeries(): Promise<{
   series: {
     series_id: string;
@@ -82,7 +52,7 @@ export async function listSeries(): Promise<{
     url: string;
   }[];
 }> {
-  const username = await getUsername();
+  const username = await getCurrentUsername();
 
   const { data } = await graphql<{
     seriesList: {
@@ -119,8 +89,8 @@ export async function createSeries(params: {
   url_slug: string;
   url: string;
 }> {
-  const username = await getUsername();
-  const url_slug = params.url_slug ?? nameToSlug(params.name);
+  const username = await getCurrentUsername();
+  const url_slug = params.url_slug ?? toSlug(params.name);
 
   const { data } = await graphql<{
     createSeries: { id: string; name: string; url_slug: string } | null;

@@ -1,5 +1,5 @@
-import { nanoid } from "nanoid";
 import { graphql } from "../auth.js";
+import { toSlug } from "../utils/slug.js";
 import { deleteDraft, getDraft } from "./draft.js";
 
 const WRITE_POST = `
@@ -38,17 +38,6 @@ const WRITE_POST = `
   }
 `;
 
-export function titleToSlug(title: string): string {
-  const slug = title
-    .toLowerCase()
-    .replace(/[^a-z0-9가-힣\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/^-+/, "")
-    .slice(0, 80);
-  return slug || nanoid(8);
-}
-
 export async function publishPost(params: {
   draft_id: string;
   is_private?: boolean;
@@ -69,7 +58,7 @@ export async function publishPost(params: {
     is_markdown: true,
     is_temp: false,
     is_private,
-    url_slug: titleToSlug(draft.title),
+    url_slug: toSlug(draft.title),
     thumbnail: draft.thumbnail ?? null,
     meta: { short_description: draft.short_description ?? "" },
     series_id: draft.series_id ?? null,
