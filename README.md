@@ -54,7 +54,7 @@ claude mcp add --scope global velog -- npx -y velog-mcp-claude
 | `velog_draft_post` | 포스트 초안 생성 |
 | `velog_publish_post` | 초안을 Velog에 발행 |
 | `velog_list_posts` | 내 포스트 목록 조회 |
-| `velog_get_post` | 특정 포스트 전체 내용 조회 |
+| `velog_get_post` | 특정 포스트 전체 내용 조회 (조회수 포함) |
 | `velog_update_post` | 기존 포스트 수정 |
 | `velog_delete_post` | 포스트 삭제 |
 | `velog_upload_image` | 로컬 이미지를 Velog CDN에 업로드 |
@@ -82,6 +82,7 @@ claude mcp add --scope global velog -- npx -y velog-mcp-claude
 | `velog_search_posts` | 키워드로 포스트 검색 |
 | `velog_get_trending` | 트렌딩 포스트 조회 (day / week / month / year) |
 | `velog_trend_report` | 트렌딩 포스트 분석 리포트 |
+| `velog_topic_research` | 트렌딩 태그 × 내 포스트 교차분석으로 아직 안 쓴 인기 주제 발굴 |
 
 ## GitHub 블로그 마이그레이션
 
