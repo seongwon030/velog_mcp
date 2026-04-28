@@ -13,7 +13,6 @@ import {
   deleteComment,
   deletePost,
   deleteSeries,
-  updateSeries,
   getComments,
   getNotifications,
   getPost,
@@ -21,6 +20,7 @@ import {
   getRss,
   getTrending,
   getTrendReport,
+  gitToPost,
   importFromGitHub,
   likePost,
   listPosts,
@@ -33,6 +33,7 @@ import {
   unlikePost,
   updateComment,
   updatePost,
+  updateSeries,
   uploadImage,
   writeComment,
 } from "./tools/index.js";
@@ -518,6 +519,44 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["repo"],
       },
     },
+    {
+      name: "velog_git_to_post",
+      description:
+        "git 커밋 이력과 diff를 분석해 Velog 블로그 초안용 컨텍스트를 반환합니다. 코딩 후 '오늘 작업한 거 블로그에 올려줘'라고 하면 자동으로 커밋 내역과 변경 코드를 수집해 Claude가 초안을 작성할 수 있도록 합니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          repo_path: {
+            type: "string",
+            description: "git 레포 경로 (기본값: 현재 디렉터리 '.')",
+          },
+          commits: {
+            type: "number",
+            description:
+              "분석할 최근 커밋 수 (기본값: 5). since 파라미터가 있으면 무시됩니다.",
+          },
+          since: {
+            type: "string",
+            description:
+              "특정 커밋 해시 또는 'HEAD~10' 이후의 커밋을 분석. 제공 시 commits 무시.",
+          },
+          max_diff_lines: {
+            type: "number",
+            description: "diff_excerpt 최대 라인 수 (기본값: 200)",
+          },
+          include_diff: {
+            type: "boolean",
+            description: "실제 코드 diff 포함 여부 (기본값: true)",
+          },
+          tags: {
+            type: "array",
+            items: { type: "string" },
+            description:
+              "블로그 태그 힌트. 생략 시 변경 파일 확장자로 자동 추정.",
+          },
+        },
+      },
+    },
   ],
 }));
 
@@ -792,6 +831,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           })
           .parse(args ?? {});
         const result = await topicResearch(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_git_to_post": {
+        const params = z
+          .object({
+            repo_path: z.string().optional(),
+            commits: z.number().optional(),
+            since: z.string().optional(),
+            max_diff_lines: z.number().optional(),
+            include_diff: z.boolean().optional(),
+            tags: z.array(z.string()).optional(),
+          })
+          .parse(args ?? {});
+        const result = await gitToPost(params);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 

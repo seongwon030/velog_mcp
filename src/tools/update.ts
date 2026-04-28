@@ -76,7 +76,9 @@ export async function updatePost(params: {
         params.short_description ?? current.short_description ?? "",
     },
     series_id:
-      params.series_id !== undefined ? params.series_id : (current.series_id ?? null),
+      params.series_id !== undefined
+        ? params.series_id
+        : (current.series_id ?? null),
     token: null,
   });
 

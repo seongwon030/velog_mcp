@@ -8,6 +8,7 @@ export { deletePost } from "./delete.js";
 export type { Draft } from "./draft.js";
 export { createDraft, deleteDraft, getDraft } from "./draft.js";
 export { getPost } from "./get.js";
+export { gitToPost } from "./git-to-post.js";
 export { importFromGitHub } from "./github-import/index.js";
 export { likePost, unlikePost } from "./like.js";
 export { listPosts } from "./list.js";
