@@ -26,5 +26,6 @@ export { listTags } from "./tags.js";
 export { listTempPosts } from "./temp-posts.js";
 export { getTrendReport } from "./trend-report.js";
 export { getTrending } from "./trending.js";
+export { topicResearch } from "./topic-research.js";
 export { updatePost } from "./update.js";
 export { uploadImage } from "./upload.js";

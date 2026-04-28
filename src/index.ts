@@ -28,6 +28,7 @@ import {
   listTempPosts,
   publishPost,
   searchPosts,
+  topicResearch,
   unlikePost,
   updateComment,
   updatePost,
@@ -431,6 +432,34 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       },
     },
     {
+      name: "velog_topic_research",
+      description:
+        "Velog 트렌딩 포스트를 분석해 내가 아직 쓰지 않은 인기 주제(gap)를 찾아줍니다. 트렌딩 태그 빈도와 내 포스트 태그 이력을 교차분석해 주제 발굴에 활용하세요.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          timeframe: {
+            type: "string",
+            enum: ["day", "week", "month"],
+            description: "분석 기간 (기본값: week)",
+          },
+          limit: {
+            type: "number",
+            description: "분석할 트렌딩 포스트 수 (기본값: 15, 최대: 20)",
+          },
+          focus_tags: {
+            type: "array",
+            items: { type: "string" },
+            description: "관심 태그 필터 — 지정하면 해당 태그만 분석 (생략 시 전체)",
+          },
+          compare_with_my_posts: {
+            type: "boolean",
+            description: "내 포스트 태그와 비교해 gap 분석 포함 여부 (기본값: true)",
+          },
+        },
+      },
+    },
+    {
       name: "velog_import_from_github",
       description:
         "GitHub 블로그 저장소의 마크다운 파일을 Velog 초안으로 가져옵니다. Jekyll/Hugo/기타 정적 블로그의 _posts 폴더를 지원합니다. dry_run: true로 먼저 미리보기를 확인하세요.",
@@ -708,6 +737,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           })
           .parse(args);
         const result = await importFromGitHub(params);
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      }
+
+      case "velog_topic_research": {
+        const params = z
+          .object({
+            timeframe: z.enum(["day", "week", "month"]).optional(),
+            limit: z.number().optional(),
+            focus_tags: z.array(z.string()).optional(),
+            compare_with_my_posts: z.boolean().optional(),
+          })
+          .parse(args ?? {});
+        const result = await topicResearch(params);
         return { content: [{ type: "text", text: JSON.stringify(result) }] };
       }
 
