@@ -30,9 +30,7 @@ export async function topicResearch(params: {
 
   const postDetails = await Promise.all(
     trendingPosts.map((p) =>
-      getPost({ url_slug: p.url_slug, username: p.username }).catch(
-        () => null,
-      ),
+      getPost({ url_slug: p.url_slug, username: p.username }).catch(() => null),
     ),
   );
 

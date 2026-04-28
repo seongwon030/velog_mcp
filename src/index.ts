@@ -450,11 +450,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           focus_tags: {
             type: "array",
             items: { type: "string" },
-            description: "관심 태그 필터 — 지정하면 해당 태그만 분석 (생략 시 전체)",
+            description:
+              "관심 태그 필터 — 지정하면 해당 태그만 분석 (생략 시 전체)",
           },
           compare_with_my_posts: {
             type: "boolean",
-            description: "내 포스트 태그와 비교해 gap 분석 포함 여부 (기본값: true)",
+            description:
+              "내 포스트 태그와 비교해 gap 분석 포함 여부 (기본값: true)",
           },
         },
       },
