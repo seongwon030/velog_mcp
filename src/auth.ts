@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import readline from "node:readline";
 import { ERR_TOKEN_EXPIRED, ERR_VELOG_NETWORK } from "./constants/errors.js";
+import { execFileNoThrow } from "./utils/execFileNoThrow.js";
 
 const CONFIG_PATH = path.join(os.homedir(), ".velog-mcp.json");
 const GRAPHQL_URL = "https://v2.velog.io/graphql";
@@ -155,6 +156,7 @@ export async function runSetup(): Promise<void> {
     console.log(`설정 파일: ${CONFIG_PATH}`);
 
     await injectClaudeDesktopConfig();
+    await injectCodexConfig();
   } catch (e) {
     console.error("오류:", (e as Error).message);
     process.exit(1);
@@ -219,4 +221,37 @@ async function injectClaudeDesktopConfig(): Promise<void> {
 
   console.log(`Claude Desktop config 업데이트 완료: ${configPath}`);
   console.log("Claude Desktop을 재시작하면 velog_mcp 툴이 활성화됩니다.");
+}
+
+async function injectCodexConfig(): Promise<void> {
+  const { exitCode: codexInstalled } = await execFileNoThrow("codex", [
+    "--version",
+  ]);
+  if (codexInstalled !== 0) return;
+
+  const answer = await prompt("\nCodex CLI에 자동으로 추가할까요? (y/n): ");
+  if (answer.toLowerCase() !== "y") return;
+
+  const { exitCode, stderr } = await execFileNoThrow("codex", [
+    "mcp",
+    "add",
+    "velog",
+    "--",
+    "npx",
+    "-y",
+    "velog-mcp-claude",
+  ]);
+
+  if (exitCode !== 0) {
+    console.log(
+      "\nCodex 자동 등록에 실패했습니다. ~/.codex/config.toml에 직접 추가하세요:",
+    );
+    console.log(
+      '\n[mcp_servers.velog]\ncommand = "npx"\nargs = ["-y", "velog-mcp-claude"]\n',
+    );
+    if (stderr.trim()) console.log(stderr.trim());
+    return;
+  }
+
+  console.log("Codex CLI 등록 완료. `codex mcp list`로 확인할 수 있습니다.");
 }

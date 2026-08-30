@@ -4,6 +4,8 @@
 
 Claude가 Velog에 직접 포스트를 작성·발행·수정·삭제하고, 댓글·좋아요·검색·트렌딩까지 다룰 수 있는 MCP 서버.
 
+stdio 기반 표준 MCP 서버라 Claude Code, Claude Desktop, Codex CLI 등 MCP를 지원하는 클라이언트에서 모두 동작합니다.
+
 **npm**: [velog-mcp-claude](https://www.npmjs.com/package/velog-mcp-claude) | **요구사항**: Node.js 18+
 
 ## 설치
@@ -44,6 +46,22 @@ claude mcp add --scope global velog -- npx -y velog-mcp-claude
   }
 }
 ```
+
+### Codex CLI
+
+```bash
+codex mcp add velog -- npx -y velog-mcp-claude
+```
+
+또는 `~/.codex/config.toml`에 직접 추가:
+
+```toml
+[mcp_servers.velog]
+command = "npx"
+args = ["-y", "velog-mcp-claude"]
+```
+
+등록 확인은 `codex mcp list`.
 
 ## 툴 목록
 
