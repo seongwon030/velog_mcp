@@ -1,6 +1,6 @@
 {
   "name": "velog-mcp-claude",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "description": "MCP server for Velog - draft, publish, and manage posts via Claude",
   "mcpName": "io.github.seongwon030/velog",
   "keywords": [
