@@ -388,17 +388,23 @@ npm run build     # TypeScript 컴파일
 npm run dev       # watch 모드
 ```
 
-### 배포 방법 (이중 배포)
+### 배포 방법
 
-1. GitHub Packages: `npm publish` (publishConfig에 npm.pkg.github.com 설정됨)
-2. npm registry: 이름 임시 변경 후 publish
+npm 레지스트리(`velog-mcp-claude`) 단일 배포. 태그를 푸시하면
+`.github/workflows/release.yml`이 lint → build → test → publish를 수행한다.
 
 ```bash
-# npm 배포 스크립트
-node -e "const p=require('./package.json'); p.name='velog-mcp-claude'; require('fs').writeFileSync('package.json',JSON.stringify(p,null,2))"
-npm publish --registry https://registry.npmjs.org --access public
-node -e "const p=require('./package.json'); p.name='@seongwon030/velog-mcp-claude'; require('fs').writeFileSync('package.json',JSON.stringify(p,null,2))"
+npm version minor      # package.json 버전 + 커밋 + 태그 생성
+git push && git push --tags
 ```
+
+- 릴리즈 워크플로우는 태그 버전과 `package.json` 버전이 다르면 실패한다.
+- 수동 실행이 필요하면 Actions 탭에서 `Release`를 `workflow_dispatch`로 돌린다.
+- `NPM_TOKEN` 시크릿(Automation 토큰) 필요.
+- v0.10.0까지는 수동 배포였고, 이름을 임시로 바꿔 올리는 절차 때문에
+  v0.11.0 ~ v0.20.0이 npm에 누락된 적이 있다. 그래서 자동화로 전환했다.
+
+---
 
 ### 버전 히스토리
 
@@ -417,6 +423,14 @@ node -e "const p=require('./package.json'); p.name='@seongwon030/velog-mcp-claud
 | 0.11.0 | 시리즈 관리 4종 추가 (list/create/append/delete)                                        |
 | 0.12.0 | list_posts에 cursor/tag/username, get_post에 username 파라미터 추가                     |
 | 0.13.0 | velog_update_comment, velog_list_tags, velog_list_temp_posts 추가                       |
+| 0.14.0 | velog_import_from_github 추가 (Jekyll/Hugo front matter 파싱)                          |
+| 0.15.0 | getComments username 파라미터, slug fallback, 댓글 GraphQL 마이그레이션                |
+| 0.16.0 | GitHub import 병렬 처리 + rate limit 보호                                              |
+| 0.17.0 | GitHub import 하위 디렉터리 재귀 스캔                                                  |
+| 0.17.1 | draft 스토어에 24h TTL 추가 (메모리 누수 수정)                                         |
+| 0.18.0 | velog_topic_research 추가, velog_get_post에 views 필드 추가                            |
+| 0.19.0 | updatePost의 series_id 지원, velog_update_series 추가, createSeries description 추가   |
+| 0.20.0 | velog_git_to_post 추가 (커밋 이력·diff → 블로그 초안 프롬프트)                         |
 
 ---
 

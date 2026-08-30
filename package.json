@@ -1,5 +1,5 @@
 {
-  "name": "@seongwon030/velog-mcp-claude",
+  "name": "velog-mcp-claude",
   "version": "0.20.0",
   "description": "MCP server for Velog - draft, publish, and manage posts via Claude",
   "keywords": [
@@ -45,9 +45,6 @@
   },
   "engines": {
     "node": ">=18"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
   },
   "repository": {
     "type": "git",
