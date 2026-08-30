@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.seongwon030/velog",
+  "title": "Velog",
+  "description": "Write, publish, and manage Velog (velog.io) posts, series, comments, and trends. 29 tools.",
+  "version": "0.22.0",
+  "websiteUrl": "https://www.npmjs.com/package/velog-mcp-claude",
+  "repository": {
+    "url": "https://github.com/seongwon030/velog_mcp",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "velog-mcp-claude",
+      "version": "0.22.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
