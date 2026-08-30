@@ -1,7 +1,7 @@
 # velog-mcp-claude
 
 [![npm](https://img.shields.io/npm/v/velog-mcp-claude)](https://www.npmjs.com/package/velog-mcp-claude)
-[![downloads](https://img.shields.io/npm/dm/velog-mcp-claude)](https://www.npmjs.com/package/velog-mcp-claude)
+[![downloads](https://img.shields.io/npm/dt/velog-mcp-claude)](https://www.npmjs.com/package/velog-mcp-claude)
 [![CI](https://github.com/seongwon030/velog_mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/seongwon030/velog_mcp/actions/workflows/ci.yml)
 [![license](https://img.shields.io/npm/l/velog-mcp-claude)](./LICENSE)
 
