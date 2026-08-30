@@ -37,3 +37,22 @@ jobs:
         run: |
           gh secret set VELOG_ACCESS_TOKEN --body "${{ steps.health.outputs.access_token }}"
           gh secret set VELOG_REFRESH_TOKEN --body "${{ steps.health.outputs.refresh_token }}"
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: slackapi/slack-github-action@b0fa283ad8fea605de13dc3f449259339835fc52 # v2.1.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ":rotating_light: Velog API 헬스체크 실패 — <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|워크플로우 보기>",
+              "attachments": [
+                {
+                  "color": "danger",
+                  "fields": [
+                    { "title": "확인 사항", "value": "토큰 만료 / GH_PAT 만료 / Velog API 스펙 변경", "short": false }
+                  ]
+                }
+              ]
+            }
