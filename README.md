@@ -113,6 +113,16 @@ args = ["-y", "velog-mcp-claude"]
 | `velog_get_trending` | 트렌딩 포스트 조회 (day / week / month / year) |
 | `velog_trend_report` | 트렌딩 포스트 분석 리포트 |
 | `velog_topic_research` | 트렌딩 태그 × 내 포스트 교차분석으로 아직 안 쓴 인기 주제 발굴 |
+| `velog_get_rss` | 특정 유저의 RSS 피드 조회 (인증 불필요) |
+
+### 내 계정
+
+| 툴 | 설명 |
+| --- | --- |
+| `velog_list_tags` | 내 태그 목록과 태그별 포스트 수 조회 |
+| `velog_list_temp_posts` | 임시저장 포스트 목록 조회 |
+| `velog_get_notifications` | 알림 목록 조회 (좋아요·댓글·팔로우, 읽지 않은 수 포함) |
+| `velog_get_reading_list` | 읽을 목록(북마크) 조회 |
 
 ## git 커밋 → 블로그 초안
 
@@ -128,6 +138,7 @@ args = ["-y", "velog-mcp-claude"]
 - `commits`: 가져올 최근 커밋 수 (기본값: 5)
 - `since`: 특정 커밋·태그 이후 범위 지정 (예: `v0.19.0`, `HEAD~10`)
 - `include_diff`: 코드 diff 포함 여부 (기본값: `true`)
+- `max_diff_lines`: diff에서 가져올 최대 줄 수 (기본값: 200)
 - `tags`: 포스트에 넣을 태그 힌트 (미지정 시 파일 확장자로 자동 추론)
 
 ## GitHub 블로그 마이그레이션
@@ -156,7 +167,7 @@ Jekyll / Hugo 등 front matter가 있는 마크다운을 지원합니다. `dry_r
 
 ## 인증
 
-- `access_token`: ~1-2시간 TTL, Velog 서버가 자동 갱신
+- `access_token`: ~24시간 TTL, Velog 서버가 자동 갱신
 - `refresh_token`: ~30일 TTL. 만료 시 `npx -p velog-mcp-claude velog-mcp-setup` 재실행
 
 ## 주의사항

@@ -376,7 +376,7 @@ FormData 필드: `image` (파일), `type` ("post" | "profile")
 ### 인증
 
 - 토큰 위치: `~/.velog-mcp.json` (0600 권한)
-- `access_token`: ~1-2시간 TTL, GraphQL 응답 Set-Cookie로 자동 갱신
+- `access_token`: ~24시간 TTL, GraphQL 응답 Set-Cookie로 자동 갱신
 - `refresh_token`: ~30일 TTL, 만료 시 `npx -p velog-mcp-claude velog-mcp-setup` 재실행
 
 ---
