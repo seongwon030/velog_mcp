@@ -48,7 +48,7 @@ jobs:
                   "fields": [
                     { "title": "레포지토리", "value": "${{ github.repository }}", "short": true },
                     { "title": "브랜치", "value": "${{ github.ref_name }}", "short": true },
-                    { "title": "커밋", "value": "${{ github.event.head_commit.message }}", "short": false }
+                    { "title": "커밋", "value": ${{ toJSON(github.event.head_commit.message) }}, "short": false }
                   ]
                 }
               ]
@@ -69,7 +69,7 @@ jobs:
                   "fields": [
                     { "title": "레포지토리", "value": "${{ github.repository }}", "short": true },
                     { "title": "브랜치", "value": "${{ github.ref_name }}", "short": true },
-                    { "title": "커밋", "value": "${{ github.event.head_commit.message }}", "short": false }
+                    { "title": "커밋", "value": ${{ toJSON(github.event.head_commit.message) }}, "short": false }
                   ]
                 }
               ]
