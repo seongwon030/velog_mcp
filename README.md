@@ -1,5 +1,10 @@
 # velog-mcp-claude
 
+[![npm](https://img.shields.io/npm/v/velog-mcp-claude)](https://www.npmjs.com/package/velog-mcp-claude)
+[![downloads](https://img.shields.io/npm/dm/velog-mcp-claude)](https://www.npmjs.com/package/velog-mcp-claude)
+[![CI](https://github.com/seongwon030/velog_mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/seongwon030/velog_mcp/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/velog-mcp-claude)](./LICENSE)
+
 > Velog 개발자([@velopert](https://github.com/velopert))로부터 운영을 허용한다는 답변을 받은 독립 오픈소스입니다.
 
 Claude가 Velog에 직접 포스트를 작성·발행·수정·삭제하고, 댓글·좋아요·검색·트렌딩까지 다룰 수 있는 MCP 서버.
