@@ -184,6 +184,26 @@ Jekyll / Hugo 등 front matter가 있는 마크다운을 지원합니다. `dry_r
 
 [docs/roadmap.md](./docs/roadmap.md) 참고.
 
+## 기능 제안
+
+원하는 기능이 있으면 [기능 제안 이슈](https://github.com/seongwon030/velog_mcp/issues/new?template=feature_request.md)로 남겨 주세요. 먼저 [로드맵](./docs/roadmap.md)과 [기존 이슈](https://github.com/seongwon030/velog_mcp/issues)에 같은 제안이 있는지 확인하고, 있으면 👍 반응이나 댓글로 의견을 보태 주세요.
+
+링크로 열면 제목 앞에 `[기능 제안]`이 붙고 아래 양식이 자동으로 채워집니다. 각 칸을 채워 주시면 검토가 빠릅니다.
+
+```markdown
+## 하고 싶은 일
+Claude에게 어떤 요청을 했을 때 무엇이 되길 원하는지
+예) "내 시리즈 글 순서를 발행일 순으로 바꿔줘"
+
+## 지금 불편한 점
+현재 툴로는 왜 안 되는지, 어떻게 우회하고 있는지
+
+## 참고 (선택)
+Velog 웹에서 같은 동작을 하는 화면, 관련 API 요청 등
+```
+
+Velog 비공개 API에 없는 동작이거나 대량 발행·스팸처럼 정상적인 블로그 활동 범위를 벗어나는 기능은 구현하지 않을 수 있습니다.
+
 ## 면책 조항
 
 내부 GraphQL API를 리버스 엔지니어링하여 구현되었습니다. API 구조 변경으로 예고 없이 동작이 중단될 수 있습니다.
