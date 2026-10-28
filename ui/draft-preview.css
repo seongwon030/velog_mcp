@@ -111,6 +111,7 @@ h1 {
   border-top: 1px solid var(--border);
   max-height: 480px;
   overflow: auto;
+  word-break: keep-all;
   overflow-wrap: anywhere;
 }
 
