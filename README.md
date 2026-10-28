@@ -126,8 +126,23 @@ args = ["-y", "velog-mcp-claude"]
 | --- | --- |
 | `velog_list_tags` | 내 태그 목록과 태그별 포스트 수 조회 |
 | `velog_list_temp_posts` | 임시저장 포스트 목록 조회 |
-| `velog_get_notifications` | 알림 목록 조회 (좋아요·댓글·팔로우, 읽지 않은 수 포함) |
+| `velog_get_notifications` | 읽지 않은 알림 수 조회 (개별 알림 목록은 Velog API 미제공) |
 | `velog_get_reading_list` | 읽을 목록(북마크) 조회 |
+
+모든 툴에는 MCP annotations(`readOnlyHint`, `destructiveHint` 등)가 붙어 있습니다. 클라이언트는 이를 보고 조회 툴은 바로 실행하고, 삭제·수정 툴에는 경고를 띄울 수 있습니다.
+
+## 프롬프트 (슬래시 커맨드)
+
+자주 쓰는 작업을 MCP 프롬프트로 제공합니다. Claude Code에서는 `/mcp__velog__write_post`처럼 슬래시 커맨드로, Claude Desktop에서는 프롬프트 메뉴에서 고를 수 있습니다.
+
+| 프롬프트 | 인자 | 설명 |
+| --- | --- | --- |
+| `write_post` | `topic`(필수), `tags` | 비슷한 글을 찾아본 뒤 초안 작성 |
+| `trend_brief` | `timeframe` | 트렌딩 포스트를 주제별로 묶어 브리핑 |
+| `topic_ideas` | `focus_tags` | 아직 안 쓴 인기 주제 3개 제안 |
+| `commits_to_post` | `repo_path`, `since` | 최근 커밋과 diff로 기술 블로그 초안 작성 |
+
+초안을 만드는 프롬프트는 사용자가 공개/비공개를 고르기 전까지 발행하지 않도록 지시합니다.
 
 ## git 커밋 → 블로그 초안
 

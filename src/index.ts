@@ -4,9 +4,12 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
+  GetPromptRequestSchema,
+  ListPromptsRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
+import { getPrompt, listPrompts } from "./prompts.js";
 import {
   appendToSeries,
   createDraft,
@@ -43,15 +46,45 @@ const { version } = createRequire(import.meta.url)("../package.json") as {
   version: string;
 };
 
+// MCP 툴 annotations. 클라이언트가 승인 여부와 경고 표시를 정하는 힌트입니다.
+const READ_ONLY = { readOnlyHint: true, openWorldHint: true };
+const WRITE = {
+  readOnlyHint: false,
+  destructiveHint: false,
+  openWorldHint: true,
+};
+const OVERWRITE = {
+  readOnlyHint: false,
+  destructiveHint: true,
+  idempotentHint: true,
+  openWorldHint: true,
+};
+const LOCAL_WRITE = {
+  readOnlyHint: false,
+  destructiveHint: false,
+  openWorldHint: false,
+};
+
 const server = new Server(
   { name: "velog_mcp", version },
-  { capabilities: { tools: {} } },
+  { capabilities: { tools: {}, prompts: {} } },
 );
+
+server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+  prompts: listPrompts(),
+}));
+
+server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+  const params = z.record(z.string()).optional().parse(args);
+  return getPrompt(name, params);
+});
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
     {
       name: "velog_draft_post",
+      annotations: { title: "초안 작성", ...LOCAL_WRITE },
       description:
         "Velog 포스트 초안을 세션 메모리에 저장합니다. 발행 전 사용자가 검토할 수 있도록 draft_id를 반환합니다.",
       inputSchema: {
@@ -85,6 +118,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_publish_post",
+      annotations: { title: "포스트 발행", ...WRITE, destructiveHint: true },
       description:
         "초안(draft_id)을 Velog에 발행합니다. velog_draft_post 호출 후 사용하세요.",
       inputSchema: {
@@ -104,6 +138,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_list_posts",
+      annotations: { title: "포스트 목록 조회", ...READ_ONLY },
       description:
         "Velog 포스트 목록을 가져옵니다. username을 지정하면 타 유저 포스트도 조회할 수 있습니다.",
       inputSchema: {
@@ -130,6 +165,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_get_post",
+      annotations: { title: "포스트 조회", ...READ_ONLY },
       description:
         "특정 Velog 포스트의 전체 내용을 가져옵니다. username을 지정하면 타 유저 포스트도 조회할 수 있습니다.",
       inputSchema: {
@@ -146,6 +182,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_update_post",
+      annotations: { title: "포스트 수정", ...OVERWRITE },
       description: "기존 Velog 포스트를 수정합니다.",
       inputSchema: {
         type: "object",
@@ -178,6 +215,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_delete_post",
+      annotations: { title: "포스트 삭제", ...OVERWRITE },
       description: "Velog 포스트를 삭제합니다.",
       inputSchema: {
         type: "object",
@@ -189,6 +227,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_upload_image",
+      annotations: { title: "이미지 업로드", ...WRITE },
       description:
         "로컬 이미지 파일을 Velog에 업로드하고 URL을 반환합니다. 반환된 URL을 마크다운 본문에 사용하세요.",
       inputSchema: {
@@ -205,6 +244,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_write_comment",
+      annotations: { title: "댓글 작성", ...WRITE },
       description:
         "Velog 포스트에 댓글을 작성합니다. comment_id를 지정하면 대댓글로 작성됩니다.",
       inputSchema: {
@@ -225,6 +265,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_delete_comment",
+      annotations: { title: "댓글 삭제", ...OVERWRITE },
       description: "Velog 댓글을 삭제합니다.",
       inputSchema: {
         type: "object",
@@ -236,6 +277,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_update_comment",
+      annotations: { title: "댓글 수정", ...OVERWRITE },
       description: "Velog 댓글 내용을 수정합니다.",
       inputSchema: {
         type: "object",
@@ -248,6 +290,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_get_comments",
+      annotations: { title: "댓글 조회", ...READ_ONLY },
       description:
         "특정 Velog 포스트의 댓글 목록을 가져옵니다. 댓글 ID를 확인하여 삭제에 활용할 수 있습니다. username을 지정하면 타 유저 포스트의 댓글도 조회할 수 있습니다.",
       inputSchema: {
@@ -267,6 +310,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_like_post",
+      annotations: { title: "좋아요", ...WRITE, idempotentHint: true },
       description: "Velog 포스트에 좋아요를 누릅니다.",
       inputSchema: {
         type: "object",
@@ -278,6 +322,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_unlike_post",
+      annotations: { title: "좋아요 취소", ...WRITE, idempotentHint: true },
       description: "Velog 포스트 좋아요를 취소합니다.",
       inputSchema: {
         type: "object",
@@ -289,6 +334,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_search_posts",
+      annotations: { title: "포스트 검색", ...READ_ONLY },
       description:
         "Velog 포스트를 키워드로 검색합니다. username을 지정하면 특정 유저의 포스트만 검색합니다.",
       inputSchema: {
@@ -305,6 +351,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_get_trending",
+      annotations: { title: "트렌딩 조회", ...READ_ONLY },
       description:
         "Velog 트렌딩 포스트 목록을 가져옵니다. timeframe으로 기간을 지정할 수 있습니다.",
       inputSchema: {
@@ -322,6 +369,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_trend_report",
+      annotations: { title: "트렌드 리포트", ...READ_ONLY },
       description:
         "Velog 트렌딩 포스트를 분석하여 최근 개발 동향 리포트 데이터를 반환합니다. 각 포스트의 태그, 요약, 좋아요/댓글 수를 포함하며 Claude가 이를 분석해 트렌드 문서를 작성합니다.",
       inputSchema: {
@@ -341,20 +389,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_get_notifications",
+      annotations: { title: "알림 조회", ...READ_ONLY },
       description:
-        "내 Velog 알림 목록을 가져옵니다. 좋아요·댓글·팔로우 알림과 읽지 않은 알림 수를 반환합니다.",
+        "내 Velog의 읽지 않은 알림 수를 가져옵니다. Velog v2 API가 개별 알림 목록을 제공하지 않아 목록은 반환하지 않습니다.",
       inputSchema: {
         type: "object",
         properties: {
           mark_as_read: {
             type: "boolean",
-            description: "조회 후 읽음 처리 여부 (기본값: false)",
+            description: "현재 지원하지 않습니다 (값은 무시됨)",
           },
         },
       },
     },
     {
       name: "velog_get_reading_list",
+      annotations: { title: "읽을 목록 조회", ...READ_ONLY },
       description:
         "내 Velog 읽을 목록(북마크)을 가져옵니다. 저장한 포스트 목록을 반환합니다.",
       inputSchema: {
@@ -371,6 +421,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_get_rss",
+      annotations: { title: "RSS 조회", ...READ_ONLY },
       description:
         "특정 Velog 유저의 RSS 피드를 가져옵니다. 인증 없이 최신 포스트 목록을 조회할 수 있습니다.",
       inputSchema: {
@@ -386,21 +437,25 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_list_tags",
+      annotations: { title: "태그 목록 조회", ...READ_ONLY },
       description: "내 Velog 태그 목록과 태그별 포스트 수를 조회합니다.",
       inputSchema: { type: "object", properties: {} },
     },
     {
       name: "velog_list_temp_posts",
+      annotations: { title: "임시저장 목록 조회", ...READ_ONLY },
       description: "Velog 임시저장 포스트 목록을 가져옵니다.",
       inputSchema: { type: "object", properties: {} },
     },
     {
       name: "velog_list_series",
+      annotations: { title: "시리즈 목록 조회", ...READ_ONLY },
       description: "내 Velog 시리즈 목록을 조회합니다.",
       inputSchema: { type: "object", properties: {} },
     },
     {
       name: "velog_create_series",
+      annotations: { title: "시리즈 생성", ...WRITE },
       description: "새 Velog 시리즈를 생성합니다.",
       inputSchema: {
         type: "object",
@@ -417,6 +472,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_update_series",
+      annotations: { title: "시리즈 수정", ...OVERWRITE },
       description: "Velog 시리즈의 이름 또는 URL slug를 수정합니다.",
       inputSchema: {
         type: "object",
@@ -433,6 +489,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_append_to_series",
+      annotations: { title: "시리즈에 포스트 추가", ...WRITE },
       description:
         "포스트를 시리즈에 추가합니다. post_id는 velog_publish_post 또는 velog_list_posts 응답에서 확인할 수 있습니다.",
       inputSchema: {
@@ -450,6 +507,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_delete_series",
+      annotations: { title: "시리즈 삭제", ...OVERWRITE },
       description:
         "Velog 시리즈를 삭제합니다. 시리즈 내 포스트는 삭제되지 않습니다.",
       inputSchema: {
@@ -462,6 +520,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_topic_research",
+      annotations: { title: "주제 리서치", ...READ_ONLY },
       description:
         "Velog 트렌딩 포스트를 분석해 내가 아직 쓰지 않은 인기 주제(gap)를 찾아줍니다. 트렌딩 태그 빈도와 내 포스트 태그 이력을 교차분석해 주제 발굴에 활용하세요.",
       inputSchema: {
@@ -492,6 +551,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_import_from_github",
+      annotations: { title: "GitHub 블로그 가져오기", ...WRITE },
       description:
         "GitHub 블로그 저장소의 마크다운 파일을 Velog 초안으로 가져옵니다. Jekyll/Hugo/기타 정적 블로그의 _posts 폴더를 지원합니다. dry_run: true로 먼저 미리보기를 확인하세요.",
       inputSchema: {
@@ -526,6 +586,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "velog_git_to_post",
+      annotations: {
+        title: "커밋으로 초안 컨텍스트 만들기",
+        readOnlyHint: true,
+        openWorldHint: false,
+      },
       description:
         "git 커밋 이력과 diff를 분석해 Velog 블로그 초안용 컨텍스트를 반환합니다. 코딩 후 '오늘 작업한 거 블로그에 올려줘'라고 하면 자동으로 커밋 내역과 변경 코드를 수집해 Claude가 초안을 작성할 수 있도록 합니다.",
       inputSchema: {
@@ -844,7 +909,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           .object({
             repo_path: z.string().optional(),
             commits: z.number().optional(),
-            since: z.string().optional(),
+            since: z
+              .string()
+              .regex(/^[^-]/, "since는 '-'로 시작할 수 없습니다.")
+              .optional(),
             max_diff_lines: z.number().optional(),
             include_diff: z.boolean().optional(),
             tags: z.array(z.string()).optional(),

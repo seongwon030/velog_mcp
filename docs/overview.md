@@ -35,7 +35,26 @@ src/index.ts  ← 툴 라우터
     ├── tools/tags.ts         userTags query
     └── tools/temp-posts.ts   posts(temp_only) query
 src/auth.ts   ← GraphQL 요청 래퍼 + 토큰 관리
+src/prompts.ts ← MCP 프롬프트 정의 (prompts/list, prompts/get)
 ```
+
+### 툴 annotations
+
+`src/index.ts` 상단의 프리셋으로 모든 툴에 annotations를 붙인다. 클라이언트용 힌트일 뿐 서버에서 강제하지 않는다.
+
+| 프리셋 | 대상 |
+| --- | --- |
+| `READ_ONLY` | 조회·검색·트렌딩·리서치 툴 |
+| `WRITE` | 댓글 작성, 업로드, 시리즈 생성·추가, GitHub 가져오기, 좋아요·취소(`idempotentHint: true`) |
+| `OVERWRITE` (`destructiveHint: true`) | 포스트·댓글·시리즈 수정과 삭제 |
+| `WRITE` + `destructiveHint: true` | `velog_publish_post` |
+| `LOCAL_WRITE` | `velog_draft_post` (메모리에만 저장) |
+
+`velog_publish_post`는 스펙상 추가 동작이지만, 공개 발행은 RSS·검색으로 퍼져 되돌리기 어렵고 성공 시 메모리 초안도 지우므로 삭제와 같은 경고 등급(`destructiveHint: true`)을 준다. `velog_get_notifications`의 `mark_as_read`는 아직 구현되지 않아 읽지 않은 알림 수만 조회하므로 `READ_ONLY`다. `velog_git_to_post`는 로컬 git만 읽으므로 `openWorldHint: false`이고, git 옵션 주입을 막기 위해 `since`는 `-`로 시작할 수 없다. 조회 툴도 토큰 갱신 시 `~/.velog-mcp.json`을 다시 쓰지만, 인증 유지용 내부 동작이라 읽기 전용 판정에서 제외한다.
+
+### 프롬프트
+
+`src/prompts.ts`는 프롬프트마다 `build(args)`로 user 메시지 하나를 만든다. MCP 프롬프트 인자는 문자열만 받으므로 `focus_tags`처럼 목록이 필요한 값은 쉼표로 구분한 문자열을 그대로 넘기고, 실제 검증은 각 툴의 Zod 스키마가 맡는다. 인자는 앞뒤 공백을 지우고 빈 값은 생략한 것으로 본다. 필수 인자가 비어 있거나 이름이 없는 프롬프트는 `InvalidParams`(-32602) 에러를 던진다.
 
 ---
 
@@ -252,13 +271,13 @@ src/auth.ts   ← GraphQL 요청 래퍼 + 토큰 관리
 
 ### `velog_get_notifications`
 
-내 알림 목록 조회. 좋아요·댓글·팔로우 알림 포함.
+읽지 않은 알림 수 조회(`notificationCount` query). Velog v2 API가 개별 알림 목록을 제공하지 않아 목록은 반환하지 않는다.
 
 | 파라미터     | 타입    | 필수 | 설명                            |
 | ------------ | ------- | ---- | ------------------------------- |
-| mark_as_read | boolean |      | 조회 후 읽음 처리 (기본: false) |
+| mark_as_read | boolean |      | 현재 미지원 (값은 무시됨)       |
 
-반환: `{ notifications: [...], unread_count }`
+반환: `{ unread_count, note }`
 
 ---
 
