@@ -207,7 +207,8 @@ async function publish(d: Draft): Promise<void> {
     const { url } = post;
     setState("done");
     void reportPublished(d, isPrivate, post);
-    publishMsg.textContent = "발행했습니다.";
+    publishMsg.textContent =
+      "발행했습니다. Velog 페이지 반영까지 1~2분 걸릴 수 있어 링크가 바로 열리지 않으면 잠시 뒤 다시 열어 주세요.";
     const safe = safeLinkHref(url);
     if (safe) {
       const link = document.createElement("button");
