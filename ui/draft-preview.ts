@@ -164,14 +164,38 @@ async function loadDraft(draftId: string): Promise<void> {
   }
 }
 
+// 카드에서 한 발행은 대화 기록에 남지 않는다. 호스트가 다음 사용자 메시지와 함께
+// 모델에 넘기도록 알려서, 모델이 이미 발행된 초안을 다시 발행하려 하지 않게 한다.
+async function reportPublished(
+  d: Draft,
+  isPrivate: boolean,
+  post: { post_id: string; url: string },
+): Promise<void> {
+  if (!app.getHostCapabilities()?.updateModelContext) return;
+  const scope = isPrivate ? "비공개" : "공개";
+  try {
+    await app.updateModelContext({
+      content: [
+        {
+          type: "text",
+          text: `사용자가 미리보기 카드에서 초안 "${d.title}"(draft_id: ${d.draft_id})을 ${scope}로 발행했습니다. post_id: ${post.post_id}, URL: ${post.url}. 이 초안은 이미 발행되어 다시 발행할 수 없습니다.`,
+        },
+      ],
+    });
+  } catch {
+    // 알림 실패는 발행 결과에 영향을 주지 않는다.
+  }
+}
+
 async function publish(d: Draft): Promise<void> {
+  const isPrivate = isPrivateChoice();
   setState("publishing");
   publishMsg.textContent = "";
   publishMsg.classList.remove("error");
   try {
     const result = await app.callServerTool({
       name: "velog_publish_post",
-      arguments: { draft_id: d.draft_id, is_private: isPrivateChoice() },
+      arguments: { draft_id: d.draft_id, is_private: isPrivate },
     });
     if (result.isError) {
       publishMsg.textContent = textOf(result) || "발행에 실패했습니다.";
@@ -179,8 +203,10 @@ async function publish(d: Draft): Promise<void> {
       setState("idle");
       return;
     }
-    const { url } = JSON.parse(textOf(result)) as { url: string };
+    const post = JSON.parse(textOf(result)) as { post_id: string; url: string };
+    const { url } = post;
     setState("done");
+    void reportPublished(d, isPrivate, post);
     publishMsg.textContent = "발행했습니다.";
     const safe = safeLinkHref(url);
     if (safe) {

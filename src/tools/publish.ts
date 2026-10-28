@@ -1,6 +1,6 @@
 import { graphql } from "../auth.js";
 import { toSlug } from "../utils/slug.js";
-import { deleteDraft, getDraft } from "./draft.js";
+import { getDraft, markPublished } from "./draft.js";
 
 const WRITE_POST = `
   mutation WritePost(
@@ -71,12 +71,8 @@ export async function publishPost(params: {
     );
   }
 
-  deleteDraft(params.draft_id);
-
   const { id, url_slug, user } = data.writePost;
-  return {
-    post_id: id,
-    url_slug,
-    url: `https://velog.io/@${user.username}/${url_slug}`,
-  };
+  const url = `https://velog.io/@${user.username}/${url_slug}`;
+  markPublished(params.draft_id, url);
+  return { post_id: id, url_slug, url };
 }
