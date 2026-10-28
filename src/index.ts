@@ -6,10 +6,13 @@ import {
   CallToolRequestSchema,
   GetPromptRequestSchema,
   ListPromptsRequestSchema,
+  ListResourcesRequestSchema,
   ListToolsRequestSchema,
+  ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { getPrompt, listPrompts } from "./prompts.js";
+import { DRAFT_PREVIEW_URI, listResources, readResource } from "./resources.js";
 import {
   appendToSeries,
   createDraft,
@@ -18,6 +21,7 @@ import {
   deletePost,
   deleteSeries,
   getComments,
+  getDraft,
   getNotifications,
   getPost,
   getReadingList,
@@ -67,7 +71,7 @@ const LOCAL_WRITE = {
 
 const server = new Server(
   { name: "velog_mcp", version },
-  { capabilities: { tools: {}, prompts: {} } },
+  { capabilities: { tools: {}, prompts: {}, resources: {} } },
 );
 
 server.setRequestHandler(ListPromptsRequestSchema, async () => ({
@@ -79,6 +83,14 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
   const params = z.record(z.string()).optional().parse(args);
   return getPrompt(name, params);
 });
+
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+  resources: listResources(),
+}));
+
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => ({
+  contents: await readResource(request.params.uri),
+}));
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
@@ -115,6 +127,34 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
         required: ["title", "body"],
       },
+      // MCP Apps 지원 호스트는 결과를 미리보기 카드로 보여준다. 구버전 호스트를 위해
+      // 폐기 예정인 평면 키도 함께 둔다.
+      _meta: {
+        ui: { resourceUri: DRAFT_PREVIEW_URI },
+        "ui/resourceUri": DRAFT_PREVIEW_URI,
+      },
+    },
+    {
+      name: "velog_get_draft",
+      annotations: {
+        title: "초안 조회",
+        readOnlyHint: true,
+        openWorldHint: false,
+      },
+      description:
+        "draft_id로 세션 메모리의 초안 전체(본문 포함)를 가져옵니다. 초안 미리보기 카드 전용 툴입니다.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          draft_id: {
+            type: "string",
+            description: "velog_draft_post에서 반환된 draft_id",
+          },
+        },
+        required: ["draft_id"],
+      },
+      // 앱(카드)만 호출할 수 있고 모델 툴 목록에는 노출되지 않는다.
+      _meta: { ui: { visibility: ["app"] } },
     },
     {
       name: "velog_publish_post",
@@ -661,6 +701,28 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 is_private: draft.is_private,
                 series_id: draft.series_id ?? null,
                 body_preview: preview,
+              }),
+            },
+          ],
+        };
+      }
+
+      case "velog_get_draft": {
+        const params = z.object({ draft_id: z.string() }).parse(args);
+        const draft = getDraft(params.draft_id);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                draft_id: draft.draft_id,
+                title: draft.title,
+                body: draft.body,
+                tags: draft.tags,
+                is_private: draft.is_private,
+                short_description: draft.short_description ?? null,
+                thumbnail: draft.thumbnail ?? null,
+                series_id: draft.series_id ?? null,
               }),
             },
           ],

@@ -36,7 +36,36 @@ src/index.ts  ← 툴 라우터
     └── tools/temp-posts.ts   posts(temp_only) query
 src/auth.ts   ← GraphQL 요청 래퍼 + 토큰 관리
 src/prompts.ts ← MCP 프롬프트 정의 (prompts/list, prompts/get)
+src/resources.ts ← MCP Apps UI 리소스 (resources/list, resources/read)
+ui/            ← 초안 미리보기 카드 브라우저 코드 (tsc 대상 아님, esbuild로 번들)
+    ├── draft-preview.ts   App 브리지, 렌더링, 발행 버튼
+    ├── markdown.ts        marked 설정과 HTML·URL 정화 (vitest로 테스트)
+    ├── sanitize.ts        DOMPurify 허용 목록 2차 정화 (vitest + jsdom으로 테스트)
+    ├── draft-preview.html/.css  인라인 템플릿
+    └── tsconfig.json      DOM lib 타입 검사 전용 (noEmit)
+scripts/build-ui.mjs ← ui/를 dist/ui/draft-preview.html 한 파일로 묶음
 ```
+
+### MCP Apps 초안 미리보기 카드
+
+MCP Apps 확장(`io.modelcontextprotocol/ui`, 스펙 2026-01-26)을 저수준 `Server`에 직접 연결한다. ext-apps의 `registerAppTool`/`registerAppResource`는 `McpServer` 전용이라 쓰지 않는다.
+
+- **capabilities:** `resources: {}`를 추가했다. 이 capability가 없으면 SDK가 `ReadResourceRequestSchema` 핸들러 등록 자체를 거부한다.
+- **UI 리소스:** `ui://velog/draft-preview`, mimeType `text/html;profile=mcp-app`. `resources/list` 항목과 `resources/read` contents 양쪽에 `_meta.ui.csp.resourceDomains: ["https://velog.velcdn.com"]`을 둔다. 스펙상 `resourceDomains`는 img-src만이 아니라 script-src·style-src·font-src·media-src에 함께 들어가므로, velog CDN은 이미지뿐 아니라 스크립트 출처로도 허용된다. velog CDN은 업로드 이미지를 이미지 MIME 타입으로 서빙해 스크립트로 실행되지 않으므로 위험은 낮다고 본다(확인한 사실이 아니라 판단). `connectDomains`는 두지 않으므로 카드는 외부로 fetch할 수 없다.
+- **툴 연결:** `velog_draft_post` 정의에 `_meta.ui.resourceUri`와 폐기 예정인 평면 키 `_meta["ui/resourceUri"]`를 함께 둔다. 응답 `content` 텍스트는 이전과 같고 `structuredContent`는 반환하지 않는다(Claude Code에서는 `structuredContent`가 텍스트를 대체하기 때문).
+- **앱 전용 툴 `velog_get_draft`:** `_meta.ui.visibility: ["app"]`. 카드가 `draft_id`로 초안 전체(본문 포함)를 받아 온다. `velog_draft_post` 응답에 본문 전체를 넣으면 모델 컨텍스트에 본문이 다시 들어가므로 분리했다. MCP Apps를 모르는 클라이언트는 `_meta`를 무시하므로 이 툴이 모델에게 보일 수 있다. 메모리만 읽는 툴이라 영향은 없다.
+- **카드 흐름:** `ontoolresult`로 `velog_draft_post` 결과 텍스트의 `draft_id`를 읽고 → `velog_get_draft` 호출 → 렌더링. 발행 버튼은 `velog_publish_post`를 `{ draft_id, is_private }`로 호출한다. 링크는 iframe 안에서 이동하지 않고 `app.openLink`로 호스트에 맡긴다.
+- **마크다운 정화 (`ui/markdown.ts`):** 카드 안에서 스크립트가 돌면 브리지를 통해 `velog_publish_post`나 `velog_delete_post`를 부를 수 있다. 본문은 GitHub 가져오기처럼 신뢰할 수 없는 출처에서 올 수 있으므로 marked 렌더러를 다음과 같이 고정한다.
+  - 블록·인라인 raw HTML 토큰은 모두 이스케이프해서 텍스트로 보여준다.
+  - 인라인 `<code>`·`<pre>`·`<kbd>`·`<script>` 태그 뒤에는 marked가 `inRawBlock` 상태로 들어가 텍스트 토큰을 원문 그대로(`escaped: true`) 넘기고, 기본 `text` 렌더러는 이를 그대로 출력한다. 그래서 `text` 렌더러도 덮어써서 이 토큰을 이스케이프한다. 이 상태는 같은 문단·제목·표 셀 안에서 강조나 링크 안까지 이어진다.
+  - 링크 href는 `http:`/`https:`/`mailto:`만, 이미지 src는 `https:`만 통과한다. WHATWG `URL`로 파싱한 결과의 protocol을 보므로 대소문자·제어 문자 우회가 막힌다. 상대 경로와 앵커도 거부되며, 거부된 링크는 글자만, 이미지는 alt 텍스트만 남는다.
+  - **2차 방어 (`ui/sanitize.ts`):** `innerHTML`에 넣기 직전에 DOMPurify로 한 번 더 거른다. marked 내부 동작이 바뀌어 raw HTML이 새어 나와도 렌더러가 만드는 태그(`ALLOWED_TAGS`)와 속성(`ALLOWED_ATTR`)만 남는다. `on*`, `style`, `script`·`iframe`·`svg`·`math`·`form`·`object`는 허용 목록에 없다. 훅에서 링크 href와 이미지 src를 같은 스킴 규칙으로 다시 검사하고, checkbox가 아닌 `input`은 지운다. DOMPurify의 `ALLOWED_URI_REGEXP`는 `start`·`rel` 같은 일반 속성 값에도 적용되므로 쓰지 않는다.
+  - 테스트: 알려진 공격 입력과 결정적 퍼즈 입력(`renderMarkdown` 3000개, `sanitize(renderMarkdown(x))` 1000개)에서 허용 목록 밖의 태그나 속성이 나오지 않는지 확인한다.
+  - 제목·태그·요약 같은 일반 필드는 `textContent`로만 넣고, `innerHTML`은 `sanitizeHtml(renderMarkdown(...))` 결과에만 쓴다.
+  - 발행 버튼: 공개 발행의 확인 클릭은 확인 상태가 된 지 800ms 안에 들어오면 무시한다(더블클릭의 두 번째 클릭 포함). Enter·Space를 누르고 있으면 브라우저가 반복 keydown마다 `detail` 0인 click을 만들므로 `keydown`의 `event.repeat`를 `preventDefault`한다. OS 더블클릭 간격이 길면 `detail`이 계속 올라가므로 `detail`은 보지 않는다. 발행 중이거나 끝난 뒤, 또는 같은 `draft_id`로 tool-result가 다시 오면 무시해서 상태가 초기화되지 않게 한다.
+- **빌드:** `npm run build` = `tsc` → `npm run build:ui`(`tsc -p ui`로 타입 검사 → `scripts/build-ui.mjs`). esbuild가 `ui/draft-preview.ts`를 IIFE 하나로 묶고, CSS와 함께 `dist/ui/draft-preview.html`에 인라인한다. 외부 URL은 없다. `@modelcontextprotocol/ext-apps`(1.x), `marked`, `dompurify`는 브라우저 번들 전용이고 ext-apps·marked는 engines가 Node 20 이상이라 devDependencies로만 두고 빌드 때 번들에 넣는다. 그래서 런타임 의존성과 `engines: ">=18"`은 바뀌지 않는다. 인라인 `<script>` 안의 `</script`·`<!--`는 `\x3C`로 바꾸고, 결과를 `vm.Script`로 컴파일해 구문이 깨지지 않았는지 확인한다.
+- **서버의 HTML 로딩:** `resources/read` 요청 때마다 `dist/index.js` 기준 `./ui/draft-preview.html`을 읽는다. 파일이 없으면 "npm run build로 UI를 빌드하세요" 에러를 던진다. `package.json`의 `files: ["dist"]`로 함께 배포된다.
+- **개발 모드:** `npm run dev`(`tsc --watch`)는 UI를 다시 빌드하지 않는다. `ui/`를 고쳤으면 `npm run build:ui`를 따로 실행한다.
 
 ### 툴 annotations
 
@@ -75,6 +104,20 @@ src/prompts.ts ← MCP 프롬프트 정의 (prompts/list, prompts/get)
 | series_id         | string   |      | 발행할 시리즈 ID          |
 
 반환: `{ draft_id, title, tags, is_private, series_id, body_preview }`
+
+MCP Apps 지원 클라이언트에서는 결과가 `ui://velog/draft-preview` 카드로 렌더링된다.
+
+---
+
+### `velog_get_draft` (앱 전용)
+
+초안 미리보기 카드가 초안 전체를 불러올 때 쓰는 툴. `_meta.ui.visibility: ["app"]`이라 MCP Apps 지원 클라이언트는 모델에게 노출하지 않는다. Velog API 호출 없음.
+
+| 파라미터 | 타입   | 필수 | 설명                   |
+| -------- | ------ | ---- | ---------------------- |
+| draft_id | string | ✅   | draft_post에서 받은 ID |
+
+반환: `{ draft_id, title, body, tags, is_private, short_description, thumbnail, series_id }` (없는 선택 필드는 `null`)
 
 ---
 

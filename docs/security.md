@@ -60,6 +60,19 @@ Velog는 내부 API 변경을 공지하지 않습니다. 다음 상황에서 갑
 - `velog_delete_comment` — 댓글 영구 삭제
 - `velog_publish_post` — 공개 발행 (발행 후 외부 공유되면 완전한 비공개 복원 불가)
 
+### 초안 미리보기 카드의 발행 버튼 (MCP Apps)
+
+- 카드의 **발행하기** 버튼을 누르는 것은 사용자가 직접 발행을 확인한 것으로 봅니다. 버튼은 카드 안의 비공개/공개 선택값으로 `velog_publish_post`를 호출합니다.
+- 공개 발행은 버튼을 두 번 눌러야 합니다. 첫 클릭에서 버튼이 "정말 공개로 발행할까요? 한 번 더 누르세요"로 바뀌고, 선택을 바꾸면 처음 상태로 돌아갑니다. 발행 중이거나 발행이 끝나면 버튼이 비활성화됩니다.
+- 기본 선택은 초안의 `is_private` 값입니다.
+- 공개 발행의 두 번째 클릭은 더블클릭이나 키를 누르고 있는 동작으로 대신할 수 없습니다. 확인 상태가 된 뒤 800ms 안에 들어온 클릭(더블클릭의 두 번째 클릭 포함)은 무시하고, Enter·Space의 키 반복(auto-repeat)으로 생기는 클릭은 막습니다.
+- 카드 안에서 스크립트가 실행되면 브리지로 다른 툴(`velog_delete_post` 포함)을 부를 수 있습니다. 그래서 두 겹으로 막습니다.
+  1. marked 렌더러가 본문 마크다운의 raw HTML 토큰과 raw-block 상태(인라인 `<code>`·`<pre>` 등 뒤)의 텍스트를 이스케이프합니다. 링크는 `http`/`https`/`mailto`, 이미지는 `https`만 허용합니다.
+  2. `innerHTML`에 넣기 직전에 DOMPurify가 렌더러가 만드는 태그·속성만 남깁니다(`on*`, `style`, `script`·`iframe`·`svg` 등 제외). URL 스킴도 다시 검사합니다.
+  제목·태그 같은 필드는 텍스트로만 넣습니다.
+- 카드 CSP는 `resourceDomains`에 `https://velog.velcdn.com`만 추가하고 외부 네트워크 연결(`connectDomains`)은 열지 않습니다. 스펙상 `resourceDomains`는 img-src뿐 아니라 script-src·style-src·font-src·media-src에도 들어가므로 velog CDN은 스크립트 출처로도 허용됩니다. velog CDN의 업로드 파일은 이미지 MIME 타입으로 서빙되어 스크립트로 실행되지 않으므로 위험은 낮다고 판단하지만, 검증하지는 않았습니다.
+- **확인되지 않은 부분:** 카드가 부르는 툴 호출(UI-initiated tool call)을 호스트가 사용자에게 다시 승인받는지는 호스트마다 다릅니다. MCP Apps 스펙은 호스트가 추가 승인을 요구할 수 *있다*고만 정합니다. 이 서버는 승인 여부에 기대지 않고 위의 두 번 클릭과 HTML 정화로 방어합니다.
+
 ### draft 휘발성
 
 - `velog_draft_post`로 생성한 초안은 **MCP 서버 프로세스 메모리에만** 존재합니다

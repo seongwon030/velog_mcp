@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Velog 초안 미리보기</title>
+    <style>
+/*__STYLE__*/
+    </style>
+  </head>
+  <body>
+    <p id="status" class="status"></p>
+    <article id="card" class="card" hidden>
+      <header>
+        <img id="thumbnail" class="thumbnail" alt="썸네일" hidden />
+        <h1 id="title"></h1>
+        <div id="meta" class="meta"></div>
+        <div id="tags" class="tags"></div>
+        <p id="description" class="description"></p>
+      </header>
+      <section id="body" class="body"></section>
+      <footer class="publish">
+        <fieldset class="visibility">
+          <legend>발행 범위</legend>
+          <label><input type="radio" name="visibility" value="private" /> 비공개</label>
+          <label><input type="radio" name="visibility" value="public" /> 공개</label>
+        </fieldset>
+        <button id="publish" type="button" class="primary">발행하기</button>
+        <p id="publish-message" class="publish-message" role="status"></p>
+        <div id="result"></div>
+      </footer>
+    </article>
+    <script>
+/*__SCRIPT__*/
+    </script>
+  </body>
+</html>
