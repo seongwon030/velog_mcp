@@ -3,7 +3,7 @@
   "name": "io.github.seongwon030/velog",
   "title": "Velog",
   "description": "Write, publish, and manage Velog (velog.io) posts, series, comments, and trends. 30 tools.",
-  "version": "0.24.0",
+  "version": "0.24.1",
   "websiteUrl": "https://www.npmjs.com/package/velog-mcp-claude",
   "repository": {
     "url": "https://github.com/seongwon030/velog_mcp",
@@ -13,7 +13,7 @@
     {
       "registryType": "npm",
       "identifier": "velog-mcp-claude",
-      "version": "0.24.0",
+      "version": "0.24.1",
       "transport": {
         "type": "stdio"
       }
