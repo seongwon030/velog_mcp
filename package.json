@@ -35,8 +35,8 @@
     "dist"
   ],
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
-    "nanoid": "^5.0.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "nanoid": "^5.1.16",
     "zod": "^3.23.0"
   },
   "devDependencies": {
