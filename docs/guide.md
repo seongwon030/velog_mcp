@@ -130,10 +130,12 @@ args = ["-y", "velog-mcp-claude"]
 
 | 프롬프트 | 인자 | 설명 |
 | --- | --- | --- |
-| `write_post` | `topic`(필수), `tags` | 비슷한 글을 찾아본 뒤 초안 작성 |
+| `write_post` | `topic`(필수), `tags`, `tone` | 비슷한 글을 찾아본 뒤 초안 작성 |
 | `trend_brief` | `timeframe` | 트렌딩 포스트를 주제별로 묶어 브리핑 |
 | `topic_ideas` | `focus_tags` | 아직 안 쓴 인기 주제 3개 제안 |
-| `commits_to_post` | `repo_path`, `since` | 최근 커밋과 diff로 기술 블로그 초안 작성 |
+| `commits_to_post` | `repo_path`, `since`, `tone` | 최근 커밋과 diff로 기술 블로그 초안 작성 |
+
+`tone`에는 "해요체", "합쇼체", "반말 회고체"처럼 원하는 말투를 적습니다. 생략하면 말투를 따로 지정하지 않습니다.
 
 초안을 만드는 프롬프트는 사용자가 공개/비공개를 고르기 전까지 발행하지 않도록 지시합니다.
 

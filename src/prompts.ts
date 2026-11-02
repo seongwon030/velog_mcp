@@ -16,6 +16,11 @@ interface PromptDefinition {
 const PUBLISH_GUARD =
   "내가 공개/비공개를 명시적으로 고르기 전에는 velog_publish_post를 호출하지 마.";
 
+const TONE_ARG: PromptArgument = {
+  name: "tone",
+  description: "말투 (예: 해요체, 합쇼체, 반말 회고체)",
+};
+
 // McpError는 메시지 앞에 "MCP error <code>:"를 붙이고 클라이언트가 받은 메시지를
 // 다시 McpError로 감싸 접두어가 두 번 붙는다. SDK는 던진 값의 code만 읽으므로
 // code를 실은 일반 Error를 던진다.
@@ -41,12 +46,14 @@ const PROMPTS: PromptDefinition[] = [
     arguments: [
       { name: "topic", description: "포스트 주제", required: true },
       { name: "tags", description: "태그 (쉼표로 구분, 생략 시 추천)" },
+      TONE_ARG,
     ],
     build: (args) =>
       [
         "Velog에 올릴 포스트를 작성해줘.",
         `- 주제: ${args.topic}`,
         `- 태그: ${args.tags || "주제에 맞게 3~5개 추천"}`,
+        ...(args.tone ? [`- 말투: ${args.tone}`] : []),
         "",
         "진행 순서:",
         "1. velog_search_posts로 비슷한 글을 찾아보고, 겹치지 않는 관점을 잡아.",
@@ -102,6 +109,7 @@ const PROMPTS: PromptDefinition[] = [
         name: "since",
         description: "이 커밋·태그 이후만 분석 (예: v0.19.0, HEAD~10)",
       },
+      TONE_ARG,
     ],
     build: (args) => {
       const options = [
@@ -111,6 +119,7 @@ const PROMPTS: PromptDefinition[] = [
       return [
         `velog_git_to_post(${options.join(", ")})로 커밋 이력과 diff를 가져와줘.`,
         "- 무엇을 왜 바꿨는지 중심으로 한국어 기술 블로그 글을 써.",
+        ...(args.tone ? [`- 말투: ${args.tone}`] : []),
         "- velog_draft_post로 초안을 만들고 draft_id와 body_preview를 보여줘.",
         `- ${PUBLISH_GUARD}`,
       ].join("\n");

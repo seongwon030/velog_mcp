@@ -82,6 +82,31 @@ describe("getPrompt", () => {
     );
   });
 
+  it("adds tone before the publish guard in prompts that create drafts", () => {
+    for (const name of ["write_post", "commits_to_post"]) {
+      const args: Record<string, string> =
+        name === "write_post" ? { topic: "x" } : {};
+      const text = getPrompt(name, { ...args, tone: " 반말 회고체 " })
+        .messages[0].content.text;
+      expect(text).toContain("말투: 반말 회고체");
+      expect(text.indexOf("말투:")).toBeLessThan(
+        text.indexOf("velog_publish_post를 호출하지 마"),
+      );
+    }
+  });
+
+  it("leaves prompts unchanged when tone is omitted or blank", () => {
+    for (const name of ["write_post", "commits_to_post"]) {
+      const args: Record<string, string> =
+        name === "write_post" ? { topic: "x" } : {};
+      const text = getPrompt(name, args).messages[0].content.text;
+      expect(text).not.toContain("말투");
+      expect(
+        getPrompt(name, { ...args, tone: "  " }).messages[0].content.text,
+      ).toBe(text);
+    }
+  });
+
   it("treats blank optional arguments as omitted", () => {
     const text = getPrompt("trend_brief", { timeframe: "  " }).messages[0]
       .content.text;
